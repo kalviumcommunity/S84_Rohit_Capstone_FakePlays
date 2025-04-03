@@ -74,7 +74,19 @@ app.delete("/api/message/:id", async (req, res) => {
   }
 });
 
-// ✅ Starting Server
+
+app.post("/api/message", (req, res) => {
+  const { user, message } = req.body;
+  
+  if (!user || !message) {
+    return res.status(400).json({ error: "User and message are required" });
+  }
+
+  res.status(201).json({ success: true, response: `Message from ${user}: ${message}` });
+});
+
+
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
