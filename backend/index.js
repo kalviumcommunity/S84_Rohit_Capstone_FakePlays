@@ -4,12 +4,16 @@ const cors = require("cors");
 require("dotenv").config();
 
 const Message = require("./models/Message");
+const authRoutes = require("./routes/authRoutes"); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+
+app.use("/api/auth", authRoutes);
 
 
 mongoose
@@ -34,16 +38,14 @@ app.post("/api/message", async (req, res) => {
   }
 });
 
-
 app.get("/api/message", async (req, res) => {
   try {
-    const messages = await Message.find(); // Fetch all messages
+    const messages = await Message.find();
     res.json(messages);
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 app.put("/api/message/:id", async (req, res) => {
   try {
@@ -60,7 +62,6 @@ app.put("/api/message/:id", async (req, res) => {
   }
 });
 
-
 app.delete("/api/message/:id", async (req, res) => {
   try {
     const deletedMessage = await Message.findByIdAndDelete(req.params.id);
@@ -75,18 +76,6 @@ app.delete("/api/message/:id", async (req, res) => {
 });
 
 
-app.post("/api/message", (req, res) => {
-  const { user, message } = req.body;
-  
-  if (!user || !message) {
-    return res.status(400).json({ error: "User and message are required" });
-  }
-
-  res.status(201).json({ success: true, response: `Message from ${user}: ${message}` });
-});
-
-
-
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(` Server running on http://localhost:${PORT}`);
 });
