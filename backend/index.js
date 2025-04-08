@@ -4,7 +4,8 @@ const cors = require("cors");
 require("dotenv").config();
 
 const Message = require("./models/Message");
-const authRoutes = require("./routes/authRoutes"); 
+const authRoutes = require("./routes/authRoutes");
+const authMiddleware = require("./middleware/authMiddleware");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,24 +13,17 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
 app.use("/api/auth", authRoutes);
 
-
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
-
-
-app.post("/api/message", async (req, res) => {
+// Protected message routes
+app.post("/api/message", authMiddleware, async (req, res) => {
   try {
-    const { user, message } = req.body;
-    if (!user || !message) {
+    const { message } = req.body;
+    if (!req.user || !message) {
       return res.status(400).json({ error: "User and message are required" });
     }
 
-    const newMessage = new Message({ user, message });
+    const newMessage = new Message({ user: req.user.id, message });
     await newMessage.save();
 
     res.status(201).json({ success: true, message: newMessage });
@@ -38,19 +32,24 @@ app.post("/api/message", async (req, res) => {
   }
 });
 
-app.get("/api/message", async (req, res) => {
+app.get("/api/message", authMiddleware, async (req, res) => {
   try {
-    const messages = await Message.find();
+    const messages = await Message.find({ user: req.user.id });
     res.json(messages);
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
 });
 
-app.put("/api/message/:id", async (req, res) => {
+app.put("/api/message/:id", authMiddleware, async (req, res) => {
   try {
     const { message } = req.body;
-    const updatedMessage = await Message.findByIdAndUpdate(req.params.id, { message }, { new: true });
+
+    const updatedMessage = await Message.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      { message },
+      { new: true }
+    );
 
     if (!updatedMessage) {
       return res.status(404).json({ error: "Message not found" });
@@ -62,9 +61,13 @@ app.put("/api/message/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/message/:id", async (req, res) => {
+app.delete("/api/message/:id", authMiddleware, async (req, res) => {
   try {
-    const deletedMessage = await Message.findByIdAndDelete(req.params.id);
+    const deletedMessage = await Message.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.id
+    });
+
     if (!deletedMessage) {
       return res.status(404).json({ error: "Message not found" });
     }
@@ -75,7 +78,14 @@ app.delete("/api/message/:id", async (req, res) => {
   }
 });
 
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 app.listen(PORT, () => {
-  console.log(` Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
