@@ -397,3 +397,143 @@ body {
     transform: translateY(60px) translateX(40px);
   }
 }
+
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  padding-top: 60px; /* navbar height */
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2.5rem 3rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  color: white;
+}
+
+.login-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 2rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-form input {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  outline: none;
+  font-size: 1rem;
+}
+
+.login-form input::placeholder {
+  color: #bbb;
+}
+
+
+.signup-prompt {
+  margin-top: 1.5rem;
+  color: #aaa;
+}
+
+.signup-prompt a {
+  color: #00ffcc;
+  text-decoration: none;
+}
+
+
+.get-started-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #00ffcc;
+  color: black;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.get-started-btn:hover {
+  background: #00ffaa;
+}
+
+
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.login-box {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  margin-top: 6.5rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.input-field {
+  padding: 0.8rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.cta-button {
+  background: linear-gradient(135deg, #ff7a18, #ffb347); /* Orange gradient */
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  background: linear-gradient(135deg, #ffb347, #ff7a18);
+  transform: scale(1.05);
+}

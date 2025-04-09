@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "../styles/style.css";
 import avatar from "../assets/Group 1 (1).jpg";
-
 
 function Home() {
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
@@ -43,7 +43,10 @@ function Home() {
         <div className="left-section">
           <h1 className="heading">Your Safe Space Powered By AI</h1>
           <p className="subtext">A fun, Situational AI chat experience designed for you</p>
-          <button className="cta-button">Get Started</button>
+          
+          {/* Button replaced with a Link to /login */}
+          <Link to="/login" className="cta-button">Get Started</Link>
+
           <p className="disclaimer">100% private and secure</p>
         </div>
         <div className="right-section">
