@@ -45,7 +45,8 @@ function Home() {
           <p className="subtext">A fun, Situational AI chat experience designed for you</p>
           
           {/* Button replaced with a Link to /login */}
-          <Link to="/login" className="cta-button">Get Started</Link>
+          <Link to="/signup" className="cta-button">Get Started</Link>
+
 
           <p className="disclaimer">100% private and secure</p>
         </div>

@@ -537,3 +537,18 @@ body {
   background: linear-gradient(135deg, #ffb347, #ff7a18);
   transform: scale(1.05);
 }
+
+.login-link {
+  margin-top: 10px;
+  color: #ccc;
+  text-align: center;
+}
+
+.login-link a {
+  color: #00bfff;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
