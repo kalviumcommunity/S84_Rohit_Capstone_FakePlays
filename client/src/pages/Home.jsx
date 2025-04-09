@@ -1,8 +1,10 @@
-
 import React, { useEffect, useState } from "react";
-import "./Home.css"; // Make sure to include styles here
+import Navbar from "../components/Navbar";
+import "../styles/style.css";
+import avatar from "../assets/Group 1 (1).jpg";
 
-function App() {
+
+function Home() {
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -35,28 +37,7 @@ function App() {
         <div className="circle circle3"></div>
       </div>
 
-      <nav
-        className={`navbar ${!isNavbarVisible ? "hide-navbar" : ""}`}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
-        <div className="logo">
-          <img src="./src/assets/Group 1 (1).jpg" alt="FakePlays Logo" className="logo-img" />
-        </div>
-        <ul className="nav-menu">
-          <li><a href="#">Home</a></li>
-          <li className="dropdown">
-            <a href="#">Features</a>
-            <ul className="dropdown-menu">
-              <li><a href="#">Anonymous Chat</a></li>
-              <li><a href="#">AI Avatars</a></li>
-              <li><a href="#">Voice Mode</a></li>
-            </ul>
-          </li>
-          <li><a href="#">Contact</a></li>
-          <li><a href="#">About</a></li>
-        </ul>
-      </nav>
+      <Navbar isNavbarVisible={isNavbarVisible} setIsHovering={setIsHovering} />
 
       <div className="container">
         <div className="left-section">
@@ -66,7 +47,7 @@ function App() {
           <p className="disclaimer">100% private and secure</p>
         </div>
         <div className="right-section">
-          <div className="ai-avatar"></div>
+          <div className="ai-avatar" style={{ backgroundImage: `url(${avatar})` }}></div>
           <div className="pulse"></div>
         </div>
       </div>
@@ -95,4 +76,4 @@ function App() {
   );
 }
 
-export default App;
+export default Home;
