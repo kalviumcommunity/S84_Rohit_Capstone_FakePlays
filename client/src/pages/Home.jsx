@@ -46,6 +46,7 @@ function Home() {
           
           {/* Button replaced with a Link to /login */}
           <Link to="/signup" className="cta-button">Get Started</Link>
+          <Link to="/Main" className="cta-button">main</Link>
 
 
           <p className="disclaimer">100% private and secure</p>
