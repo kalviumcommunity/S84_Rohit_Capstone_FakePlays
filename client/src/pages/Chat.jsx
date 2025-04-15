@@ -42,12 +42,12 @@ const Chat = () => {
 
 
         <div className="chat-header">
-  <img src="./src/assets/characters/jenna.JPG" alt="Jenna Avatar" className="bot-avatar" />
-  <div className="bot-info">
-    <h3>Jenna</h3>
-    <p>Friendly College Buddy</p>
-  </div>
-</div>
+            <img src="./src/assets/characters/jenna.JPG" alt="Jenna Avatar" className="bot-avatar" />
+              <div className="bot-info">
+                  <h3>Jenna</h3>
+          <p>Friendly College Buddy</p>
+         </div>
+      </div>
 
           <div className="chat-box">
             <div className="message bot">
