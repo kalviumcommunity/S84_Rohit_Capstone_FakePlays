@@ -76,8 +76,16 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            
             <button type="submit" className="cta-button">Login</button>
           </form>
+          <div className="google-login-wrapper">
+            <p className="or-text">or</p>
+            <a href="http://localhost:5000/api/auth/google" className="google-button">
+              <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google icon" />
+              Sign up with Google
+            </a>
+          </div>
           <p className="disclaimer">Your login is encrypted and secure.</p>
         </div>
       </div>
