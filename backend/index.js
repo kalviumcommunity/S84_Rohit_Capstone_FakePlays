@@ -19,7 +19,7 @@ app.use(express.json());
 // Routes for authentication and chat
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes); 
-app.use("/api/auth", authRoutes); // 👈 important
+app.use("/api/auth", authRoutes); 
 
 // Protected message routes
 app.post("/api/message", authMiddleware, async (req, res) => {
