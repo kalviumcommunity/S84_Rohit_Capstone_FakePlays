@@ -2,7 +2,7 @@
 ![Fake Plays Logo](https://github.com/kalviumcommunity/S84_Rohit_Capstone_FakePlays/blob/9de6aae02c939ba31d55f287d5340efc17e9c3c1/Group%201%20(1).jpg)
 
 ## Overview
-Fake Plays is an AI-powered chatbot designed to provide emotional support and companionship. Whether you're going through a tough time or just need someone to talk to, Fake Plays offers a judgment-free space to express yourself.
+Fake Plays is an owered chatboAI-pt designed to provide emotional support and companionship. Whether you're going through a tough time or just need someone to talk to, Fake Plays offers a judgment-free space to express yourself.
 
 ## Features
 - **Emotionally Aware AI** – Understands user emotions and responds accordingly.

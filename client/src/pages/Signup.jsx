@@ -62,6 +62,7 @@ function Signup() {
         <div className="login-box">
           <h2 className="heading">Create an Account</h2>
           <p className="subtext">Sign up to start your AI chat experience</p>
+
           <form className="login-form" onSubmit={handleSignup}>
             <input
               type="text"
@@ -86,6 +87,14 @@ function Signup() {
             />
             <button type="submit" className="cta-button">Sign Up</button>
           </form>
+
+          <div className="google-login-wrapper">
+            <p className="or-text">or</p>
+            <a href="http://localhost:5000/api/auth/google" className="google-button">
+              <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google icon" />
+              Sign up with Google
+            </a>
+          </div>
 
           <p className="login-link">
             Already have an account? <Link to="/login">Log in here</Link>

@@ -1,11 +1,14 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
+const passport = require("passport");
+require("./passportSetup"); // Import this after passport
 
-const Message = require("./models/Message");
+const chatRoutes = require("./routes/chat");
 const authRoutes = require("./routes/authRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
+const Message = require("./models/Message");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,7 +16,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Routes for authentication and chat
 app.use("/api/auth", authRoutes);
+app.use("/api/chat", chatRoutes); // Ensure this route is working correctly
 
 // Protected message routes
 app.post("/api/message", authMiddleware, async (req, res) => {
