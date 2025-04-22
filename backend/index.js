@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const passport = require("passport");
-require("./passportSetup"); // Import this after passport
+require("./passportSetup"); 
 
 const chatRoutes = require("./routes/chat");
 const authRoutes = require("./routes/authRoutes");
@@ -18,7 +18,8 @@ app.use(express.json());
 
 // Routes for authentication and chat
 app.use("/api/auth", authRoutes);
-app.use("/api/chat", chatRoutes); // Ensure this route is working correctly
+app.use("/api/chat", chatRoutes); 
+app.use("/api/auth", authRoutes); // 👈 important
 
 // Protected message routes
 app.post("/api/message", authMiddleware, async (req, res) => {
