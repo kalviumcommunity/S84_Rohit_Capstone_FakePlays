@@ -7,9 +7,11 @@ const Chat = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [chat, setChat] = useState([
     { sender: "bot", text: "Hey! You looked a bit alone so I came over. What's up?" },
-    { sender: "user", text: "Just spacing out... thanks for coming over 🖤" }
+    { sender: "user", text: "Just spacing out... thanks for coming over 🖤" },
   ]);
   const [userInput, setUserInput] = useState("");
+
+  const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDwYrLSssqW7Q1TZLVyA8CLapFJHs-QbJQ";
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -39,31 +41,41 @@ const Chat = () => {
     setChat(updatedChat);
     setUserInput("");
 
+    const requestPayload = {
+      contents: [
+        {
+          parts: [{ text: userInput }],
+        },
+      ],
+    };
+
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestPayload),
+    };
+
     try {
-      const res = await fetch("http://localhost:5000/api/chat/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: userInput }),  // Ensure the key is `prompt` to match the backend
-      });
+      const res = await fetch(API_URL, requestOptions);
+
+      if (!res.ok) {
+        throw new Error(`API request failed with status ${res.status}`);
+      }
 
       const data = await res.json();
 
-      if (!res.ok) {
-        console.error("Server error:", data);
-        setChat([...updatedChat, { sender: "bot", text: data.reply || "Oops, server error!" }]);
-        return;
+      if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        throw new Error("Invalid API response structure");
       }
 
-      if (!data.reply) {
-        console.warn("No reply from AI");
-        setChat([...updatedChat, { sender: "bot", text: "Hmm... I couldn't think of a reply!" }]);
-        return;
-      }
+      const botResponse = data.candidates[0].content.parts[0].text
+        .replace(/\*\*(.*?)\*\*/g, "$1") // Remove markdown bold
+        .replace(/\n/g, "<br>"); // Convert newlines to HTML line breaks
 
-      setChat([...updatedChat, { sender: "bot", text: data.reply }]);
+      setChat([...updatedChat, { sender: "bot", text: botResponse }]);
     } catch (err) {
-      console.error("Fetch failed:", err);
-      setChat([...updatedChat, { sender: "bot", text: "Sorry, I couldn't respond. 😢" }]);
+      console.error("Error generating response:", err);
+      setChat([...updatedChat, { sender: "bot", text: "Sorry, I encountered an error. Please try again." }]);
     }
   };
 
@@ -94,7 +106,7 @@ const Chat = () => {
           <div className="chat-box">
             {chat.map((msg, index) => (
               <div key={index} className={`message ${msg.sender}`}>
-                {msg.text}
+                <div dangerouslySetInnerHTML={{ __html: msg.text }} />
               </div>
             ))}
           </div>
@@ -108,7 +120,9 @@ const Chat = () => {
               onChange={(e) => setUserInput(e.target.value)}
               onKeyDown={handleKeyPress}
             />
-            <button className="cta-button" onClick={handleSend}>Send</button>
+            <button className="cta-button" onClick={handleSend}>
+              Send
+            </button>
           </div>
         </div>
       </div>
