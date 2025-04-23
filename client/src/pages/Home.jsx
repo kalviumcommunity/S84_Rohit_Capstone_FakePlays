@@ -69,9 +69,8 @@
             </div>
             <div className="footer-section">
               <h2>Contact Us</h2>
-              <p>Email: support@fakeplays.ai</p>
-              <p>Instagram: @fakeplays.ai</p>
-              <p>Location: Kalvium Campus, India</p>
+              <p>Email: rmehta1836@gmail.com</p>
+              <p>Instagram: @rohitmehta_18</p>
             </div>
           </div>
           <div className="footer-bottom">
