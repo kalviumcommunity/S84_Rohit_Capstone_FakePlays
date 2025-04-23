@@ -14,6 +14,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/main" element={<Main />} /> 
         <Route path="/chat" element={<Chat />} />
+        <Route path="/chat/:character" element={<Chat />} />
+        
+        
 
       </Routes>
     </Router>
