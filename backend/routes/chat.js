@@ -1,33 +1,52 @@
 const express = require("express");
-const axios = require("axios");  // Make sure axios is installed
 const router = express.Router();
+const axios = require("axios");
 
-// Sample POST route for /api/chat/ask
+// Hardcode Gemini API key (replace with your valid key)
+const GEMINI_API_KEY = "your_gemini_api_key_here"; // TODO: Replace with actual key from Google AI Studio
+
 router.post("/ask", async (req, res) => {
   const { prompt } = req.body;
-  if (!prompt) {
-    return res.status(400).json({ error: "Prompt is required" });
+
+  // Validate prompt
+  if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
+    return res.status(400).json({ reply: "Invalid or missing prompt." });
   }
 
+  // Validate API key
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === "your_gemini_api_key_here") {
+    console.error("GEMINI_API_KEY is not set or invalid");
+    return res.status(500).json({ reply: "Server configuration error: Missing or invalid API key." });
+  }
+
+  console.log("Received prompt:", prompt);
+  console.log("Using API key (partial):", GEMINI_API_KEY.slice(0, 5) + "...");
+
   try {
-    const response = await axios.post(
-      "https://openrouter.ai/api/v1/completions.create",
+    const geminiRes = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
       {
-        model: "shisa-ai/shisa-v2-llama3.3-70b:free",
-        messages: [{ role: "user", content: prompt }],
+        contents: [{ parts: [{ text: prompt.trim() }] }],
       },
       {
         headers: {
-          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
         },
       }
     );
-    
-    res.json({ reply: response.data.choices[0].message.content });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "AI response failed" });
+
+    const reply = geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't think of a reply!";
+    res.json({ reply });
+  } catch (err) {
+    console.error("Gemini API Error:", {
+      message: err.message,
+      status: err.response?.status,
+      data: err.response?.data,
+    });
+    res.status(500).json({
+      reply: "Error connecting to AI service.",
+      error: err.response?.data?.error?.message || err.message,
+    });
   }
 });
 
