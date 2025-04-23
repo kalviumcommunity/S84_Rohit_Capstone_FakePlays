@@ -8,6 +8,7 @@ function Login() {
   const [isHovering, setIsHovering] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -26,6 +27,7 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
@@ -35,15 +37,17 @@ function Login() {
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token); // save JWT
+        localStorage.setItem("token", data.token);
         alert("Login successful!");
-        navigate("/Main"); // go to chat page
+        navigate("/Main");
       } else {
         alert(data.error || "Login failed");
+        setLoading(false);
       }
     } catch (err) {
       console.error(err);
       alert("Network error");
+      setLoading(false);
     }
   };
 
@@ -76,13 +80,29 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            
-            <button type="submit" className="cta-button">Login</button>
+
+            <button type="submit" className="cta-button" disabled={loading}>
+              {loading ? (
+                <div className="dot-loader">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              ) : (
+                "Login"
+              )}
+            </button>
           </form>
           <div className="google-login-wrapper">
             <p className="or-text">or</p>
-            <a href="http://localhost:5000/api/auth/google" className="google-button">
-              <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google icon" />
+            <a
+              href="http://localhost:5000/api/auth/google"
+              className="google-button"
+            >
+              <img
+                src="https://img.icons8.com/color/16/000000/google-logo.png"
+                alt="Google icon"
+              />
               Sign up with Google
             </a>
           </div>
