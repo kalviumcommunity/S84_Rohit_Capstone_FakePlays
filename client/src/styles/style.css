@@ -932,3 +932,12 @@ body {
   border-radius: 20px;
 }
 
+.quoted-text {
+  color: #ffb347; /* Adjust color as you like */
+  font-style: italic;
+  font-weight: 500;
+}
+
+.quote {
+  color: orange;
+}
