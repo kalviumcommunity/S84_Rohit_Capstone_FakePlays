@@ -770,6 +770,11 @@ body {
   gap: 12px;
   padding-right: 5px;
   margin-bottom: 20px;
+
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  position: relative;
+  
 }
 
 .input-area {
@@ -891,3 +896,39 @@ body {
     opacity: 1;
   }
 }
+
+.message {
+  margin: 8px 0;
+  padding: 12px 16px;
+  border-radius: 20px;
+  max-width: 75%;
+  line-height: 1.5;
+  word-wrap: break-word;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* User Message */
+.user-message {
+  background: linear-gradient(to right, #f79e1b, #ffae42);
+  align-self: flex-end;
+  color: #1c1c1c;
+  font-weight: 500;
+  margin-left: auto;
+  text-align: right;
+  border-bottom-right-radius: 2px;
+  border-radius: 20px;
+}
+
+/* Bot Message */
+.bot-message {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffe7c6;
+  align-self: flex-start;
+  border-left: 3px solid #f79e1b;
+  margin-right: auto;
+  text-align: left;
+  border-radius: 20px;
+}
+

@@ -69,8 +69,8 @@ const Chat = () => {
       }
 
       const botResponse = data.candidates[0].content.parts[0].text
-        .replace(/\*\*(.*?)\*\*/g, "$1") // Remove markdown bold
-        .replace(/\n/g, "<br>"); // Convert newlines to HTML line breaks
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\n/g, "<br>");
 
       setChat([...updatedChat, { sender: "bot", text: botResponse }]);
     } catch (err) {
@@ -105,7 +105,10 @@ const Chat = () => {
 
           <div className="chat-box">
             {chat.map((msg, index) => (
-              <div key={index} className={`message ${msg.sender}`}>
+              <div
+                key={index}
+                className={`message ${msg.sender === "user" ? "user-message" : "bot-message"}`}
+              >
                 <div dangerouslySetInnerHTML={{ __html: msg.text }} />
               </div>
             ))}
