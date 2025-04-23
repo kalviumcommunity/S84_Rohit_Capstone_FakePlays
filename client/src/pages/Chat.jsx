@@ -19,8 +19,11 @@ She grins and nudges your shoulder with hers.<br><br>
   const chatEndRef = useRef(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chat.length > 1) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [chat]);
+  
 
   const API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDwYrLSssqW7Q1TZLVyA8CLapFJHs-QbJQ";
@@ -61,7 +64,7 @@ Speak in short paragraphs.
 
 dont use emogies
 
-remember you are a girl 
+remember you are a girl
 
 Avoid serious advice. You’re their wild, loyal bestie, not a guru.
 
@@ -164,7 +167,7 @@ She grins and nudges your shoulder with hers.
       <div className="container chat-container">
         <div className="login-box chat-box-wrapper">
           <div className="chat-header">
-            <img src="./src/assets/characters/jenna.JPG" alt="Jenna Avatar" className="bot-avatar" />
+            <img src="../src/assets/characters/jenna.JPG" alt="Jenna Avatar" className="bot-avatar" />
             <div className="bot-info">
               <h3>Jenna</h3>
               <p>Friendly College Buddy</p>

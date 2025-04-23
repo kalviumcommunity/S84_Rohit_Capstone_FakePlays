@@ -760,6 +760,7 @@ body {
   justify-content: space-between;
   padding: 24px;
   box-sizing: border-box;
+  margin-bottom: 30px;
 }
 
 .chat-box {
@@ -818,6 +819,7 @@ body {
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  
 }
 
 .bot-info h3 {
