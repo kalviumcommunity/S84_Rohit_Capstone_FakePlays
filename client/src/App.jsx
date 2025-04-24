@@ -20,22 +20,16 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/main" element={<Main />} /> 
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/chat/:character" element={<Chat />} />
-        <Route path="/truth-dare" element={<TruthDare />} />
-        <Route path="/savannachat" element={<SavannaChat />} />
-        <Route path="/sarahchat" element={<SarahChat />} />
-        <Route path="/unknownbusgirl" element={<UnknownBusGirl />} />
-        <Route path="/noah" element={<ChatNoah />} />
-        <Route path="/serena" element={<Serena />} />
-        <Route path="/maria" element={<Maria />} />
-        <Route path="/nivaanchat" element={<NivaanChat />} />
-
-
-        
-        
-
+        <Route path="/main" element={<Main />} />
+        <Route path="/chat/:botName" element={<Chat />} />
+        <Route path="/chat/truth-dare-chat" element={<TruthDare />} />
+        <Route path="/chat/savanna-chat" element={<SavannaChat />} />
+        <Route path="/chat/sarah-chat" element={<SarahChat />} />
+        <Route path="/chat/unknown-bus-girl-chat" element={<UnknownBusGirl />} />
+        <Route path="/chat/noah-chat" element={<ChatNoah />} />
+        <Route path="/chat/serena-chat" element={<Serena />} />
+        <Route path="/chat/maria-chat" element={<Maria />} />
+        <Route path="/chat/nivaan-chat" element={<NivaanChat />} />
       </Routes>
     </Router>
   );

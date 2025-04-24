@@ -54,8 +54,9 @@
       const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
         expiresIn: "1h"
       });
-      res.redirect(`http://localhost:5173?token=${token}`);
+     
+      console.log(`Redirecting to: http://localhost:5173/main?token=${token}`);
+      res.redirect(`http://localhost:5173/main?token=${token}`);
     }
   );
-
   module.exports = router;
