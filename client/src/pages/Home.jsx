@@ -9,6 +9,7 @@
     const [isHovering, setIsHovering] = useState(false);
 
     useEffect(() => {
+      
       const timeout = setTimeout(() => {
         setIsNavbarVisible(false);
       }, 5000);
@@ -45,19 +46,6 @@
             <p className="subtext">A fun, Situational AI chat experience designed for you</p>
             {/* Button replaced with a Link to /login */}
             <Link to="/signup" className="cta-button">Get Started</Link>
-
-            <Link to="/truth-dare">Truth & Dare</Link>
-            <Link to="/savannachat">savanna</Link>
-            <Link to="/sarahchat">sarah</Link>
-            <Link to="/unknownbusgirl">unknownbusgirl</Link>
-            <Link to="/noah">noah</Link>
-            <Link to="/serena">serena</Link>
-            <Link to="/maria">maria</Link>
-            <Link to="/nivaanchat">nivaan</Link>
-            
-
-         
-
 
             <p className="disclaimer">100% private and secure</p>
           </div>
