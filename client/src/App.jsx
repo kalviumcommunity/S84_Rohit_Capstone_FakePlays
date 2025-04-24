@@ -6,7 +6,7 @@ import Main from "./pages/Main";
 import Chat from "./pages/Chat";
 import TruthDare from "./pages/TruthDare";
 import SavannaChat from "./pages/SavannaChat";
-
+import SarahChat from "./pages/SarahChat";
 function App() {
   return (
     <Router>
@@ -19,6 +19,8 @@ function App() {
         <Route path="/chat/:character" element={<Chat />} />
         <Route path="/truth-dare" element={<TruthDare />} />
         <Route path="/savannachat" element={<SavannaChat />} />
+        <Route path="/sarahchat" element={<SarahChat />} />
+
         
         
 
