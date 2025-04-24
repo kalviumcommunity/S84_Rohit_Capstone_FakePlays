@@ -529,14 +529,18 @@ body {
   padding: 0.8rem;
   font-size: 1rem;
   border-radius: 0.5rem;
+  margin-bottom: 50px;  /* Adds space between button and text */
   cursor: pointer;
   transition: all 0.3s ease;
+  text-decoration: none;  /* Removes underline */
+  
 }
 
 .cta-button:hover {
   background: linear-gradient(135deg, #ffb347, #ff7a18);
   transform: scale(1.05);
 }
+
 
 .login-link {
   margin-top: 10px;
@@ -763,6 +767,7 @@ body {
   margin-bottom: 30px;
 }
 
+
 .chat-box {
   flex-grow: 1;
   overflow-y: auto;
@@ -943,3 +948,5 @@ body {
 .quote {
   color: orange;
 }
+
+

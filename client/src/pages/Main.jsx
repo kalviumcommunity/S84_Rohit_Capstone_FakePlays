@@ -37,7 +37,7 @@ function Main() {
     },
     {
       name: "Truth & Dare – The Fun Instigator",
-      img: "./src/assets/characters/truth and dare.JPG",
+      img: "./src/assets/characters/TDS.JPG",
       desc: "It’s a friend get-together and the energy is high. This bot jumps in to spice things up with fun, flirty, or deep truth and dare prompts. Are you ready to play?",
     },
     {

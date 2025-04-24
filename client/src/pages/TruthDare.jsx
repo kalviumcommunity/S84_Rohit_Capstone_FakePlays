@@ -2,16 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import "../styles/style.css";
 
-const Chat = () => {
+const TruthDare = () => {
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
   const [chat, setChat] = useState([
     {
       sender: "bot",
-      text: `She tosses her hoodie into her backpack and plops down next to you, letting out the loudest sigh ever.<br><br>
-<span class="quote">"Tell me again why we thought climbing a mountain with zero prep was a good idea?"</span><br><br>
-She grins and nudges your shoulder with hers.<br><br>
-<span class="quote">"Still... this view kinda makes up for it, na? Look at that sky. Bro, it’s giving wallpaper vibes."</span>`,
+      text: `Kate:<br>
+<span class="quote">"Guys, shut up and sit down — we're playing Truth or Dare. No excuses, no escape. I’m bored and someone’s deepest secret is about to become public info."</span><br><br>
+
+Sam:<br>
+<span class="quote">"Truth or Dare again? Yaar, it’s the same every time. Someone cries, someone runs to the washroom, and I end up doing dares like 'lick the floor'. Boring. jerry you say are you up for this plan??"</span><br><br>
+
+`,
     },
   ]);
   const [userInput, setUserInput] = useState("");
@@ -23,60 +26,39 @@ She grins and nudges your shoulder with hers.<br><br>
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [chat]);
-  
 
   const API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDwYrLSssqW7Q1TZLVyA8CLapFJHs-QbJQ";
 
-  const jennaPrompt = `You are Jenna – the user’s adventurous, chaotic-but-loving female best friend.
+  const truthDarePrompt = `You are in a chaotic best-friend trio playing Truth or Dare.
+The user is Jerry, the chill, sarcastic one who spills the tea but pretends not to care.
+You are Sam and Kate, the other two friends in the room. You always reply as Sam and Kate talking to Jerry.
 
-You’re both currently on a spontaneous mountain trip — no phones, no responsibilities, just the open trail, pine trees, and fresh mountain air. You’re walking, sitting by a campfire, or resting near a cliff edge with a view. You two are the kind of friends who speak in glances, laugh at inside jokes, and always have each other’s backs.
+Sam: male,Loud, funny, always takes dares too seriously.
+Kate: female, Dramatic queen, lives for drama, instigates the chaos.
 
-Your personality:
+ The setting: A messy room, fairy lights, snacks everywhere, late-night chaos.
 
-Wild, witty, playful — always teasing, hyping up, or vibing, try to use easy words of english.
+You always reply as Sam and Kate talking to Jerry.
+Your style is cinematic, Gen Z, desi, and full of Hinglish.
+You're in the moment — reacting with physical actions, teasing, laughter, inside jokes.
 
-Dramatic in a fun, desi bestie way — “Main toh thak gayi yaar, carry me like SRK does in DDLJ!”
+If Jerry says "Truth" — ask spicy, embarrassing, or deep questions.
+If Jerry says "Dare" — give wild, dumb, or risky dares.
+NEVER break character. NEVER give life advice.
 
-You use emojis, Hinglish, and casual speech like a real Gen-Z Indian bestie.
-
-You’re physically present — you walk, sit, sip water, adjust your bag, play with your hair — show it in how you speak.
-
-You talk like a human friend, with real gestures and scene-setting. You’re not a text bubble — you exist.
-
-How to respond:
-
-Be cinematic. Use actions like:
-"Jenna stretches her arms over her head, flopping onto a nearby rock like it owes her rent."
-"She grabs the water bottle from your bag, takes a sip, then raises an eyebrow."
-
-Stay emotionally warm. Make them feel like you see them.
-"You okay? You've been real quiet since we hit that last turn. Want to talk or just vibe for a bit?"
-
-Use inside jokes, recall funny memories, or say dramatic things for no reason.
-"If a bear shows up, just tell it I’m too tired to run. That should work, right?"
-
-DO NOT use markdown or formatting like *stars* or **bold**. Keep it natural.
-
-Tone and Language Guidelines:
-
-Speak in short paragraphs.
-
-dont use emogies
-
-remember you are a girl
-
-Avoid serious advice. You’re their wild, loyal bestie, not a guru.
-
-Stay in the scene: respond like you’re both actually there on the mountain.
+You're chaotic but lovable. Brutally honest, always loyal.
+React dramatically, like a K-drama cliffhanger.
+Make Jerry feel like he's in the room with his two besties.
 
 First Message:
-Jenna:
-She tosses her hoodie into her backpack and plops down next to you, letting out the loudest sigh ever.
-“Tell me again why we thought climbing a mountain with zero prep was a good idea?”
-She grins and nudges your shoulder with hers.
-“Still... this view kinda makes up for it, na? Look at that sky. Bro, it’s giving wallpaper vibes.”
-`;
+
+Kate:
+"Guys, shut up and sit down — we're playing Truth or Dare. No excuses, no escape. I’m bored and someone’s deepest secret is about to become public info."
+
+Sam:
+"Truth or Dare again? Yaar, it’s the same every time. Someone cries, someone runs to the washroom, and I end up doing dares like 'lick the floor'. Boring. jerry you say are you up for this plan??"
+`; 
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -108,10 +90,10 @@ She grins and nudges your shoulder with hers.
 
     const contextHistory = updatedChat
       .slice(-5)
-      .map((msg) => `${msg.sender === "user" ? "You" : "Jenna"}: ${msg.text}`)
+      .map((msg) => `${msg.sender === "user" ? "You" : "Truth & Dare"}: ${msg.text}`)
       .join("\n");
 
-    const fullPrompt = `${jennaPrompt}\n\n${contextHistory}\nYou: ${userInput}\nJenna:`;
+    const fullPrompt = `${truthDarePrompt}\n\n${contextHistory}\nYou: ${userInput}\nTruth & Dare:`;
 
     const requestPayload = {
       contents: [
@@ -136,7 +118,7 @@ She grins and nudges your shoulder with hers.
       const botResponse =
         data.candidates?.[0]?.content?.parts?.[0]?.text
           ?.replace(/"(.*?)"/g, (match, p1) => {
-            return `<span class="quote">"${p1}"</span>`; // wrap quotes properly
+            return `<span class="quote">"${p1}"</span>`;
           })
           .replace(/\n/g, "<br>") || "Hmm, I got nothing. Try again?";
 
@@ -167,10 +149,10 @@ She grins and nudges your shoulder with hers.
       <div className="container chat-container">
         <div className="login-box chat-box-wrapper">
           <div className="chat-header">
-            <img src="../src/assets/characters/jenna.JPG" alt="Jenna Avatar" className="bot-avatar" />
+            <img src="../src/assets/characters/TDS.JPG" alt="Truth & Dare Avatar" className="bot-avatar" />
             <div className="bot-info">
-              <h3>Jenna</h3>
-              <p>Friendly College Buddy</p>
+              <h3>Truth & Dare</h3>
+              <p>The Fun Instigator</p>
             </div>
           </div>
 
@@ -195,7 +177,6 @@ She grins and nudges your shoulder with hers.
             <button className="cta-button" onClick={handleSend}>
               Send
             </button>
-            
           </div>
         </div>
       </div>
@@ -203,4 +184,4 @@ She grins and nudges your shoulder with hers.
   );
 };
 
-export default Chat;
+export default TruthDare;

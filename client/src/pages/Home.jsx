@@ -43,11 +43,13 @@
           <div className="left-section">
             <h1 className="heading">Your Safe Space Powered By AI</h1>
             <p className="subtext">A fun, Situational AI chat experience designed for you</p>
-            
             {/* Button replaced with a Link to /login */}
             <Link to="/signup" className="cta-button">Get Started</Link>
-            <Link to="/Main" className="cta-button">main</Link>
-            <Link to="/Chat" className="cta-button">chat</Link>
+
+            <Link to="/truth-dare">Truth & Dare</Link>
+            <Link to="/savannachat">savanna</Link>
+
+         
 
 
             <p className="disclaimer">100% private and secure</p>
