@@ -8,6 +8,7 @@ import TruthDare from "./pages/TruthDare";
 import SavannaChat from "./pages/SavannaChat";
 import SarahChat from "./pages/SarahChat";
 import UnknownBusGirl from "./pages/UnknownBusGirl";
+import ChatNoah from "./pages/NoahChat";
 function App() {
   return (
     <Router>
@@ -22,6 +23,7 @@ function App() {
         <Route path="/savannachat" element={<SavannaChat />} />
         <Route path="/sarahchat" element={<SarahChat />} />
         <Route path="/unknownbusgirl" element={<UnknownBusGirl />} />
+        <Route path="/noah" element={<ChatNoah />} />
 
 
         
