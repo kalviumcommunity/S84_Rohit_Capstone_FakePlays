@@ -10,6 +10,7 @@ import SarahChat from "./pages/SarahChat";
 import UnknownBusGirl from "./pages/UnknownBusGirl";
 import ChatNoah from "./pages/NoahChat";
 import Serena from "./pages/Serena";
+import Maria from "./pages/Maria";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/unknownbusgirl" element={<UnknownBusGirl />} />
         <Route path="/noah" element={<ChatNoah />} />
         <Route path="/serena" element={<Serena />} />
+        <Route path="/maria" element={<Maria />} />
 
 
         
