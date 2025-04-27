@@ -10,6 +10,8 @@ function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -28,6 +30,8 @@ function Signup() {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       const res = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
@@ -37,16 +41,30 @@ function Signup() {
 
       const data = await res.json();
       if (res.ok) {
-        alert("Signup successful!");
-        navigate("/login");
+        setShowSuccess(true);
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
       } else {
         alert(data.error || "Signup failed");
+        setLoading(false);
       }
     } catch (err) {
       console.error(err);
       alert("Network error");
+      setLoading(false);
     }
   };
+
+  const SuccessCheck = () => (
+    <div className="success-check-container">
+      <svg className="checkmark" viewBox="0 0 52 52">
+        <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+        <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+      </svg>
+      <div className="success-glow"></div>
+    </div>
+  );
 
   return (
     <>
@@ -70,6 +88,7 @@ function Signup() {
               className="input-field"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              required
             />
             <input
               type="email"
@@ -77,6 +96,7 @@ function Signup() {
               className="input-field"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
             <input
               type="password"
@@ -84,8 +104,26 @@ function Signup() {
               className="input-field"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
-            <button type="submit" className="cta-button">Sign Up</button>
+
+            <button
+              type="submit"
+              className={`cta-button ${showSuccess ? "success" : ""}`}
+              disabled={loading || showSuccess}
+            >
+              {showSuccess ? (
+                <SuccessCheck />
+              ) : loading ? (
+                <div className="dot-loader">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              ) : (
+                "Sign Up"
+              )}
+            </button>
           </form>
 
           <div className="google-login-wrapper">
