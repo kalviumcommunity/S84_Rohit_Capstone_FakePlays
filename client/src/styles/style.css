@@ -1103,3 +1103,51 @@ body {
   font-size: 14px;
   text-align: center;
 }
+
+/* --- Updated Buttons --- */
+.message-actions {
+  margin-top: 5px;
+  display: flex;
+  gap: 10px;
+}
+
+.edit-button,
+.delete-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-button:hover {
+  background: #7fd8ff;
+  color: #000;
+  transform: scale(1.05);
+}
+
+.delete-button:hover {
+  background: #ff7f7f;
+  color: #000;
+  transform: scale(1.05);
+}
+
+/* --- Animation for message change --- */
+.message {
+  animation: fadeInSlide 0.5s ease;
+}
+
+@keyframes fadeInSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
