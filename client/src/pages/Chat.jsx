@@ -15,6 +15,7 @@ She grins and nudges your shoulder with hers.<br><br>
     },
   ]);
   const [userInput, setUserInput] = useState("");
+  const [editIndex, setEditIndex] = useState(null);
 
   const chatEndRef = useRef(null);
 
@@ -23,7 +24,6 @@ She grins and nudges your shoulder with hers.<br><br>
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [chat]);
-  
 
   const API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDwYrLSssqW7Q1TZLVyA8CLapFJHs-QbJQ";
@@ -99,19 +99,13 @@ She grins and nudges your shoulder with hers.
     };
   }, [isHovering]);
 
-  const handleSend = async () => {
-    if (!userInput.trim()) return;
-
-    const updatedChat = [...chat, { sender: "user", text: userInput }];
-    setChat(updatedChat);
-    setUserInput("");
-
+  const generateBotReply = async (updatedChat) => {
     const contextHistory = updatedChat
       .slice(-5)
       .map((msg) => `${msg.sender === "user" ? "You" : "Jenna"}: ${msg.text}`)
       .join("\n");
 
-    const fullPrompt = `${jennaPrompt}\n\n${contextHistory}\nYou: ${userInput}\nJenna:`;
+    const fullPrompt = `${jennaPrompt}\n\n${contextHistory}\nJenna:`;
 
     const requestPayload = {
       contents: [
@@ -136,22 +130,61 @@ She grins and nudges your shoulder with hers.
       const botResponse =
         data.candidates?.[0]?.content?.parts?.[0]?.text
           ?.replace(/"(.*?)"/g, (match, p1) => {
-            return `<span class="quote">"${p1}"</span>`; // wrap quotes properly
+            return `<span class="quote">"${p1}"</span>`;
           })
           .replace(/\n/g, "<br>") || "Hmm, I got nothing. Try again?";
 
-      setChat([...updatedChat, { sender: "bot", text: botResponse }]);
+      setChat((prevChat) => [...prevChat, { sender: "bot", text: botResponse }]);
     } catch (err) {
       console.error("Error generating response:", err);
-      setChat([
-        ...updatedChat,
+      setChat((prevChat) => [
+        ...prevChat,
         { sender: "bot", text: "Sorry, I encountered an error. Please try again." },
       ]);
     }
   };
 
+  const handleSend = async () => {
+    if (!userInput.trim()) return;
+
+    if (editIndex !== null) {
+      let updatedChat = [...chat];
+      updatedChat[editIndex].text = userInput;
+
+      // If there is a bot reply immediately after, remove it
+      if (updatedChat[editIndex + 1] && updatedChat[editIndex + 1].sender === "bot") {
+        updatedChat.splice(editIndex + 1, 1);
+      }
+
+      setChat(updatedChat);
+      setUserInput("");
+      setEditIndex(null);
+
+      // Generate new bot reply
+      await generateBotReply(updatedChat);
+      return;
+    }
+
+    const updatedChat = [...chat, { sender: "user", text: userInput }];
+    setChat(updatedChat);
+    setUserInput("");
+
+    await generateBotReply(updatedChat);
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handleSend();
+  };
+
+  const handleEdit = (index) => {
+    setUserInput(chat[index].text.replace(/<br>/g, "\n").replace(/<[^>]+>/g, ""));
+    setEditIndex(index);
+  };
+
+  const handleDelete = (index) => {
+    const updatedChat = [...chat];
+    updatedChat.splice(index, 1);
+    setChat(updatedChat);
   };
 
   return (
@@ -178,6 +211,12 @@ She grins and nudges your shoulder with hers.
             {chat.map((msg, index) => (
               <div key={index} className={`message ${msg.sender === "user" ? "user-message" : "bot-message"}`}>
                 <div dangerouslySetInnerHTML={{ __html: msg.text }} />
+                <div className="message-actions">
+                  {msg.sender === "user" && (
+                    <button className="edit-button" onClick={() => handleEdit(index)}>Edit</button>
+                  )}
+                  <button className="delete-button" onClick={() => handleDelete(index)}>Delete</button>
+                </div>
               </div>
             ))}
             <div ref={chatEndRef} />
@@ -193,9 +232,8 @@ She grins and nudges your shoulder with hers.
               onKeyDown={handleKeyPress}
             />
             <button className="cta-button" onClick={handleSend}>
-              Send
+              {editIndex !== null ? "Update" : "Send"}
             </button>
-            
           </div>
         </div>
       </div>
