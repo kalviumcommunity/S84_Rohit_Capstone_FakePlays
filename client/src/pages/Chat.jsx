@@ -187,6 +187,12 @@ She grins and nudges your shoulder with hers.
     setChat(updatedChat);
   };
 
+  const handleThreeDotsClick = (index) => {
+    const updatedChat = [...chat];
+    updatedChat[index].showOptions = !updatedChat[index].showOptions;
+    setChat(updatedChat);
+  };
+
   return (
     <>
       <div className="background">
@@ -213,9 +219,16 @@ She grins and nudges your shoulder with hers.
                 <div dangerouslySetInnerHTML={{ __html: msg.text }} />
                 <div className="message-actions">
                   {msg.sender === "user" && (
-                    <button className="edit-button" onClick={() => handleEdit(index)}>Edit</button>
+                    <div className="three-dots" onClick={() => handleThreeDotsClick(index)}>
+                      &#x22EE;
+                    </div>
                   )}
-                  <button className="delete-button" onClick={() => handleDelete(index)}>Delete</button>
+                  {msg.sender === "user" && msg.showOptions && (
+                    <div className="options-menu">
+                      <button className="edit-button" onClick={() => handleEdit(index)}>Edit</button>
+                      <button className="delete-button" onClick={() => handleDelete(index)}>Delete</button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
