@@ -1038,118 +1038,187 @@ body {
 
 
 
-.error-check-container {
+  .error-check-container {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    margin: -10px auto;
+  }
+
+  .checkmark.error {
+    stroke: #fff;
+    animation: fillError 0.6s ease-in-out 0.6s forwards, scale 0.5s ease-in-out 0.9s both;
+  }
+
+  .checkmark__circle.error {
+    stroke: #f44336; /* Red color */
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+
+  .checkmark__check.error {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+  }
+
+  /* Red fill animation */
+  @keyframes fillError {
+    100% {
+      box-shadow: inset 0 0 0 100vh #f44336;
+    }
+  }
+
+  /* Red glowing effect */
+  .error-glow {
+    position: absolute;
+    top: -25%;
+    left: -25%;
+    right: -25%;
+    bottom: -25%;
+    background: radial-gradient(circle, rgba(244,67,54,0.3) 0%, transparent 60%);
+    animation: glow 1.2s ease-out;
+    border-radius: 50%;
+  }
+
+  /* Shake animation for error */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-10px); }
+    40%, 80% { transform: translateX(10px); }
+  }
+
+  /* Button on error */
+  .cta-button.error {
+    animation: shake 0.8s;
+    background-color: #ff4d4f; /* Light red */
+    border: 2px solid #ff0000;
+    color: white;
+  }
+
+  /* Error message below button */
+  .error-message {
+    margin-top: 10px;
+    color: #ff4d4f;
+    font-size: 14px;
+    text-align: center;
+  }
+
+
+/* Message structure */
+.message {
+  display: flex;
+  justify-content: space-between; /* Space between the text and three dots */
+  align-items: center; /* Vertically align the text and dots */
+  padding: 10px;
   position: relative;
-  width: 50px;
-  height: 50px;
-  margin: -10px auto;
 }
 
-.checkmark.error {
-  stroke: #fff;
-  animation: fillError 0.6s ease-in-out 0.6s forwards, scale 0.5s ease-in-out 0.9s both;
+/* Action wrapper for the three dots and options menu */
+.message-actions {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 10px; /* Adds space between the message text and three dots */
 }
 
-.checkmark__circle.error {
-  stroke: #f44336; /* Red color */
-  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+/* Three dots icon styling */
+.three-dots {
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.6s ease;
 }
 
-.checkmark__check.error {
-  transform-origin: 50% 50%;
-  stroke-dasharray: 48;
-  stroke-dashoffset: 48;
-  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+/* Hover effect for three dots */
+.three-dots:hover {
+  transform: scale(1.5);
 }
 
-/* Red fill animation */
-@keyframes fillError {
-  100% {
-    box-shadow: inset 0 0 0 100vh #f44336;
+/* Dropdown options menu (appear on clicking three dots) */
+.options-menu {
+  position: absolute;
+  top: 50px;
+  right: 0px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(11, 7, 1, 0.6); 
+  overflow: hidden;
+  animation: dropdownFade 0.5s ease forwards;
+  z-index: 999;
+}
+
+/* Animation for dropdown menu */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
-/* Red glowing effect */
-.error-glow {
-  position: absolute;
-  top: -25%;
-  left: -25%;
-  right: -25%;
-  bottom: -25%;
-  background: radial-gradient(circle, rgba(244,67,54,0.3) 0%, transparent 60%);
-  animation: glow 1.2s ease-out;
-  border-radius: 50%;
-}
-
-/* Shake animation for error */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-10px); }
-  40%, 80% { transform: translateX(10px); }
-}
-
-/* Button on error */
-.cta-button.error {
-  animation: shake 0.8s;
-  background-color: #ff4d4f; /* Light red */
-  border: 2px solid #ff0000;
-  color: white;
-}
-
-/* Error message below button */
-.error-message {
-  margin-top: 10px;
-  color: #ff4d4f;
-  font-size: 14px;
-  text-align: center;
-}
-
-/* --- Updated Buttons --- */
-.message-actions {
-  margin-top: 5px;
-  display: flex;
-  gap: 10px;
-}
-
+/* Buttons inside options menu with romantic theme */
 .edit-button,
 .delete-button {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(8px);
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  color: white;
+  font-size: 14px;
+  text-align: left;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 100%;
 }
 
+/* Edit button hover effect */
 .edit-button:hover {
-  background: #7fd8ff;
-  color: #000;
-  transform: scale(1.05);
+  background: rgba(255, 96, 4, 0.3);
+  color: #ffa200;
+  backdrop-filter: blur(5px);
 }
 
+/* Delete button hover effect */
 .delete-button:hover {
-  background: #ff7f7f;
-  color: #000;
+  background: rgba(248, 154, 4, 0.3);
+  color: #f42708;
+  backdrop-filter: blur(5px);
+}
+
+/* Optional: Make three dots visible only on hover */
+.message:hover .three-dots {
+  opacity: 1;
+}
+
+.three-dots {
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.cta-button1 {
+  background: linear-gradient(135deg, #ff7a18, #ffb347); /* Orange gradient */
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 1rem;
+  margin-bottom: 50px;  /* Adds space between button and text */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;  /* Removes underline */
+  
+}
+
+.cta-button1:hover {
+  background: linear-gradient(135deg, #ffb347, #ff7a18);
   transform: scale(1.05);
 }
-
-/* --- Animation for message change --- */
-.message {
-  animation: fadeInSlide 0.5s ease;
-}
-
-@keyframes fadeInSlide {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-

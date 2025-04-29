@@ -16,8 +16,10 @@ She grins and nudges your shoulder with hers.<br><br>
   ]);
   const [userInput, setUserInput] = useState("");
   const [editIndex, setEditIndex] = useState(null);
+  const [isListening, setIsListening] = useState(false);
 
   const chatEndRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     if (chat.length > 1) {
@@ -38,7 +40,7 @@ Wild, witty, playful — always teasing, hyping up, or vibing, try to use easy w
 
 Dramatic in a fun, desi bestie way — “Main toh thak gayi yaar, carry me like SRK does in DDLJ!”
 
-You use emojis, Hinglish, and casual speech like a real Gen-Z Indian bestie.
+You use Hinglish and casual speech like a real Gen-Z Indian bestie.
 
 You’re physically present — you walk, sit, sip water, adjust your bag, play with your hair — show it in how you speak.
 
@@ -62,7 +64,7 @@ Tone and Language Guidelines:
 
 Speak in short paragraphs.
 
-dont use emogies
+dont use emojis
 
 remember you are a girl
 
@@ -151,7 +153,6 @@ She grins and nudges your shoulder with hers.
       let updatedChat = [...chat];
       updatedChat[editIndex].text = userInput;
 
-      // If there is a bot reply immediately after, remove it
       if (updatedChat[editIndex + 1] && updatedChat[editIndex + 1].sender === "bot") {
         updatedChat.splice(editIndex + 1, 1);
       }
@@ -159,8 +160,6 @@ She grins and nudges your shoulder with hers.
       setChat(updatedChat);
       setUserInput("");
       setEditIndex(null);
-
-      // Generate new bot reply
       await generateBotReply(updatedChat);
       return;
     }
@@ -168,7 +167,6 @@ She grins and nudges your shoulder with hers.
     const updatedChat = [...chat, { sender: "user", text: userInput }];
     setChat(updatedChat);
     setUserInput("");
-
     await generateBotReply(updatedChat);
   };
 
@@ -184,6 +182,9 @@ She grins and nudges your shoulder with hers.
   const handleDelete = (index) => {
     const updatedChat = [...chat];
     updatedChat.splice(index, 1);
+    if (updatedChat[index] && updatedChat[index].sender === "bot") {
+      updatedChat.splice(index, 1);
+    }
     setChat(updatedChat);
   };
 
@@ -191,6 +192,49 @@ She grins and nudges your shoulder with hers.
     const updatedChat = [...chat];
     updatedChat[index].showOptions = !updatedChat[index].showOptions;
     setChat(updatedChat);
+  };
+
+  const handleSpeak = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert("Your browser does not support speech recognition.");
+      return;
+    }
+
+    if (!recognitionRef.current) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-IN";
+
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            setUserInput(prev => prev + transcript);
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        if (interimTranscript) {
+          setUserInput(prev => prev + interimTranscript);
+        }
+      };
+
+      recognition.onerror = (e) => {
+        console.error("Speech recognition error:", e);
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
   };
 
   return (
@@ -246,6 +290,9 @@ She grins and nudges your shoulder with hers.
             />
             <button className="cta-button" onClick={handleSend}>
               {editIndex !== null ? "Update" : "Send"}
+            </button>
+            <button className="cta-button1" onClick={handleSpeak}>
+              {isListening ? "Stop" : "🎙️"}
             </button>
           </div>
         </div>
