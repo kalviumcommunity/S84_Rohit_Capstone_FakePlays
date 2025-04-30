@@ -1,0 +1,115 @@
+import React, { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
+import "../styles/style.css";
+
+const CreateBot = () => {
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
+  const [botName, setBotName] = useState("");
+  const [situation, setSituation] = useState("");
+  const [botImage, setBotImage] = useState(null);
+  const [botImagePreview, setBotImagePreview] = useState(null);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsNavbarVisible(false), 5000);
+
+    const handleMouseMove = (e) => {
+      if (isHovering) return;
+      setIsNavbarVisible(e.clientY < 30);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [isHovering]);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setBotImage(file);
+      setBotImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!botName || !situation || !botImage) {
+      alert("Please fill in all fields and upload an image.");
+      return;
+    }
+
+    console.log({ botName, situation, botImage });
+    // Further logic like redirect or save can go here
+  };
+
+  return (
+    <>
+      <div className="background">
+        <div className="circle circle1"></div>
+        <div className="circle circle2"></div>
+        <div className="circle circle3"></div>
+      </div>
+
+      <Navbar isNavbarVisible={isNavbarVisible} setIsHovering={setIsHovering} />
+
+      <div className="container chat-container">
+        <div className="login-box chat-box-wrapper create-bot-box">
+          <div className="chat-header">
+            {botImagePreview ? (
+              <img src={botImagePreview} alt="Bot Preview" className="bot-avatar" />
+            ) : (
+              <div className="bot-avatar placeholder">🤖</div>
+            )}
+            <div className="bot-info">
+              <h3>Create a New Bot</h3>
+              <p>Customize a virtual character with a personality</p>
+            </div>
+          </div>
+
+          <div className="bot-form">
+            <div className="form-group">
+              <label>Bot Name</label>
+              <input
+                type="text"
+                className="input-field"
+                value={botName}
+                onChange={(e) => setBotName(e.target.value)}
+                placeholder="e.g. Luna, Alex, Maria..."
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Situation / Personality Description</label>
+              <textarea
+                className="input-field"
+                rows="4"
+                value={situation}
+                onChange={(e) => setSituation(e.target.value)}
+                placeholder="Describe their emotional state, background, or role"
+              ></textarea>
+            </div>
+
+            <div className="form-group">
+              <label>Upload Bot Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="file-input"
+              />
+            </div>
+          </div>
+
+          <div className="input-area">
+            <button className="cta-button" onClick={handleSubmit}>
+              Create Bot
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default CreateBot;
