@@ -38,6 +38,13 @@ function Main() {
   }, [isHovering]);
 
   const characters = [
+
+    {
+      name: "✨ Create Your Own Bot",
+      img: "./src/assets/characters/AI.jpg",
+      desc: "Craft a custom character: choose a name, upload an image, and set the scenario. Make it yours.",
+      path: "create-bot",
+    },
     {
       name: "Jenna – Your Best Friend in the Mountains",
       img: "./src/assets/characters/jenna.JPG",
@@ -92,6 +99,7 @@ function Main() {
       desc: "Maria’s always been there for you. Today, she messages you asking for help—her voice sounds different, maybe even a little scared. She trusts you. Will you be there for her?",
       path: "maria-chat",
     },
+    
   ];
 
   return (

@@ -199,43 +199,46 @@ She grins and nudges your shoulder with hers.
       alert("Your browser does not support speech recognition.");
       return;
     }
-
+  
     if (!recognitionRef.current) {
       const recognition = new window.webkitSpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = "en-IN";
-
+  
+      let finalTranscript = '';
+  
       recognition.onresult = (event) => {
         let interimTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            setUserInput(prev => prev + transcript);
+            finalTranscript += transcript + ' ';
           } else {
             interimTranscript += transcript;
           }
         }
-        if (interimTranscript) {
-          setUserInput(prev => prev + interimTranscript);
-        }
+        setUserInput(finalTranscript + interimTranscript);
       };
-
+  
       recognition.onerror = (e) => {
         console.error("Speech recognition error:", e);
       };
-
+  
       recognitionRef.current = recognition;
     }
-
+  
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
+      // Reset final transcript before starting new session
+      setUserInput('');
       recognitionRef.current.start();
       setIsListening(true);
     }
   };
+  
 
   return (
     <>
