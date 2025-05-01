@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Add useNavigate
 import Navbar from "../components/Navbar";
 import "../styles/style.css";
 
@@ -9,6 +10,7 @@ const CreateBot = () => {
   const [situation, setSituation] = useState("");
   const [botImage, setBotImage] = useState(null);
   const [botImagePreview, setBotImagePreview] = useState(null);
+  const navigate = useNavigate(); // Initialize navigate
 
   useEffect(() => {
     const timeout = setTimeout(() => setIsNavbarVisible(false), 5000);
@@ -39,8 +41,36 @@ const CreateBot = () => {
       return;
     }
 
-    console.log({ botName, situation, botImage });
-    // Further logic like redirect or save can go here
+    // Convert image file to Data URL
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageDataUrl = reader.result;
+
+      // Generate a unique path for the bot
+      const botPath = botName
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "") + "-chat";
+
+      // Create bot object
+      const newBot = {
+        name: botName,
+        img: imageDataUrl, // Store Data URL
+        desc: situation,
+        path: botPath,
+      };
+
+      // Load existing bots from localStorage
+      const existingBots = JSON.parse(localStorage.getItem("customBots")) || [];
+      // Add new bot
+      existingBots.push(newBot);
+      // Save back to localStorage
+      localStorage.setItem("customBots", JSON.stringify(existingBots));
+
+      // Redirect to main page
+      navigate("/main");
+    };
+    reader.readAsDataURL(botImage);
   };
 
   return (

@@ -7,16 +7,16 @@ function Main() {
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
+  const [customBots, setCustomBots] = useState(JSON.parse(localStorage.getItem("customBots")) || []);
 
   useEffect(() => {
-
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get("token");
     if (token) {
       localStorage.setItem("token", token);
       navigate("/main", { replace: true });
     }
-    
+
     const timeout = setTimeout(() => {
       setIsNavbarVisible(false);
     }, 5000);
@@ -38,7 +38,6 @@ function Main() {
   }, [isHovering]);
 
   const characters = [
-
     {
       name: "✨ Create Your Own Bot",
       img: "./src/assets/characters/AI.jpg",
@@ -99,8 +98,25 @@ function Main() {
       desc: "Maria’s always been there for you. Today, she messages you asking for help—her voice sounds different, maybe even a little scared. She trusts you. Will you be there for her?",
       path: "maria-chat",
     },
-    
   ];
+
+  // Combine predefined characters and custom bots
+  const allCharacters = [...characters, ...customBots];
+
+  // Function to delete a custom bot
+  const handleDeleteBot = (botPath) => {
+    console.log("Attempting to delete bot with path:", botPath); // Debug log
+    if (window.confirm("Are you sure you want to delete this bot?")) {
+      const updatedBots = customBots.filter((bot) => {
+        const match = bot.path !== botPath;
+        console.log(`Checking bot: ${bot.path}, Keep: ${match}`); // Debug log
+        return match;
+      });
+      console.log("Updated bots:", updatedBots); // Debug log
+      setCustomBots(updatedBots);
+      localStorage.setItem("customBots", JSON.stringify(updatedBots));
+    }
+  };
 
   return (
     <>
@@ -116,16 +132,44 @@ function Main() {
         <input type="text" className="search-bar" placeholder="Search chats or topics..." />
 
         <div className="boxes-container">
-          {characters.map((char, index) => (
+          {allCharacters.map((char, index) => (
             <div
-              key={index}
+              key={`${char.path}-${index}`} // Unique key using path and index
               className="glass-box character-box"
+              style={{ position: "relative" }}
               onClick={() => navigate(`/chat/${char.path}`)}
-              style={{ cursor: "pointer" }}
             >
               <img src={char.img} alt={char.name} className="character-img" />
               <h3 className="character-name">{char.name}</h3>
               <p className="character-desc">{char.desc}</p>
+              {/* Add delete button only for custom bots */}
+              {customBots.some((bot) => bot.path === char.path) && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent navigation
+                    handleDeleteBot(char.path);
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: "10px",
+                    right: "10px",
+                    background: "red",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "24px",
+                    height: "24px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                  }}
+                  title="Delete Bot"
+                >
+                  ×
+                </button>
+              )}
             </div>
           ))}
         </div>
