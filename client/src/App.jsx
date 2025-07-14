@@ -13,6 +13,8 @@ import Serena from "./pages/Serena";
 import Maria from "./pages/Maria";
 import NivaanChat from "./pages/NivaanChat";
 import CreateBot from "./pages/CreateBot";
+import CustomChat from "./pages/CustomChat";
+import BotChat from "./pages/BotChat";
 
 function App() {
   return (
@@ -32,6 +34,8 @@ function App() {
         <Route path="/chat/maria-chat" element={<Maria />} />
         <Route path="/chat/nivaan-chat" element={<NivaanChat />} />
         <Route path="/chat/create-bot" element={<CreateBot />} />
+        <Route path="/chat/:botnew" element={<CustomChat />} /> 
+        <Route path="/chat/:botPath" element={<BotChat />} />
       </Routes>
     </Router>
   );

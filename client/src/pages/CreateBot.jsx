@@ -46,11 +46,11 @@ const CreateBot = () => {
     reader.onload = () => {
       const imageDataUrl = reader.result;
 
-      // Generate a unique path for the bot
+      // Generate a unique path for the bot (this will be used in the URL)
       const botPath = botName
         .toLowerCase()
         .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "") + "-chat";
+        .replace(/[^a-z0-9-]/g, "") + "-chat"; // Ensure it's URL-safe
 
       // Create bot object
       const newBot = {
@@ -67,8 +67,8 @@ const CreateBot = () => {
       // Save back to localStorage
       localStorage.setItem("customBots", JSON.stringify(existingBots));
 
-      // Redirect to main page
-      navigate("/main");
+      // Redirect to the newly created bot's chat page using botPath
+      navigate(`/chat/${botPath}`); // Navigate to the bot's page directly
     };
     reader.readAsDataURL(botImage);
   };
