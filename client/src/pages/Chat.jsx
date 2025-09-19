@@ -27,8 +27,8 @@ She grins and nudges your shoulder with hers.<br><br>
     }
   }, [chat]);
 
-  const API_URL =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDwYrLSssqW7Q1TZLVyA8CLapFJHs-QbJQ";
+   const API_URL =
+ `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
 
   const jennaPrompt = `You are Jenna – the user’s adventurous, chaotic-but-loving female best friend.
 
