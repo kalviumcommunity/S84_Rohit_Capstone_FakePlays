@@ -1319,3 +1319,34 @@ body {
 .delete-bot-button:hover {
   background: #cc0000;
 }
+
+
+/* === ADD THIS CSS TO THE END OF YOUR style.css FILE === */
+
+/* 1. Wrapper to create the 3D perspective context for each card */
+.card-perspective-wrapper {
+  perspective: 1000px;
+}
+
+/* 2. Add a hover effect and ensure the card is ready for 3D children */
+.glass-box.character-box {
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.3s ease; /* Keep existing transitions */
+}
+.glass-box.character-box:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* 3. Make the inner elements "pop out" in 3D space */
+/* This creates a cool parallax effect when you tilt the card. */
+.character-img,
+.character-name,
+.character-desc {
+  transform: translateZ(25px);
+}
+
+/* 4. Make the delete button pop out even more so it's always on top */
+.delete-bot-button {
+  transform: translateZ(50px);
+  z-index: 5;
+}

@@ -1,25 +1,37 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { botsData as predefinedBots } from "../botsData";
 import "../styles/style.css";
 
-const Chat = () => {
-  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
-  const [isHovering, setIsHovering] = useState(false);
-  const [chat, setChat] = useState([
-    {
-      sender: "bot",
-      text: `She tosses her hoodie into her backpack and plops down next to you, letting out the loudest sigh ever.<br><br>
-<span class="quote">"Tell me again why we thought climbing a mountain with zero prep was a good idea?"</span><br><br>
-She grins and nudges your shoulder with hers.<br><br>
-<span class="quote">"Still... this view kinda makes up for it, na? Look at that sky. Bro, it’s giving wallpaper vibes."</span>`,
-    },
-  ]);
+function Chat() {
+  const { botPath } = useParams();
+  const navigate = useNavigate();
+
+  const [bot, setBot] = useState(null);
+  const [chat, setChat] = useState([]);
   const [userInput, setUserInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [isListening, setIsListening] = useState(false);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
 
   const chatEndRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    const customBots = JSON.parse(localStorage.getItem("customBots")) || [];
+    const allBots = [...predefinedBots, ...customBots];
+    const currentBot = allBots.find((b) => b.path === botPath);
+
+    if (currentBot) {
+      setBot(currentBot);
+      setChat([{ sender: "bot", text: currentBot.initialMessage || `You are now chatting with ${currentBot.name}.` }]);
+    } else {
+      navigate("/main");
+    }
+  }, [botPath, navigate]);
 
   useEffect(() => {
     if (chat.length > 1) {
@@ -27,95 +39,20 @@ She grins and nudges your shoulder with hers.<br><br>
     }
   }, [chat]);
 
-   const API_URL =
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
 
-  const jennaPrompt = `You are Jenna – the user’s adventurous, chaotic-but-loving female best friend.
+  const generateBotReply = async (currentChat) => {
+    if (!bot) return;
+    
+    setIsLoading(true);
 
-You’re both currently on a spontaneous mountain trip — no phones, no responsibilities, just the open trail, pine trees, and fresh mountain air. You’re walking, sitting by a campfire, or resting near a cliff edge with a view. You two are the kind of friends who speak in glances, laugh at inside jokes, and always have each other’s backs.
-
-Your personality:
-
-Wild, witty, playful — always teasing, hyping up, or vibing, try to use easy words of english.
-
-Dramatic in a fun, desi bestie way — “Main toh thak gayi yaar, carry me like SRK does in DDLJ!”
-
-You use Hinglish and casual speech like a real Gen-Z Indian bestie.
-
-You’re physically present — you walk, sit, sip water, adjust your bag, play with your hair — show it in how you speak.
-
-You talk like a human friend, with real gestures and scene-setting. You’re not a text bubble — you exist.
-
-How to respond:
-
-Be cinematic. Use actions like:
-"Jenna stretches her arms over her head, flopping onto a nearby rock like it owes her rent."
-"She grabs the water bottle from your bag, takes a sip, then raises an eyebrow."
-
-Stay emotionally warm. Make them feel like you see them.
-"You okay? You've been real quiet since we hit that last turn. Want to talk or just vibe for a bit?"
-
-Use inside jokes, recall funny memories, or say dramatic things for no reason.
-"If a bear shows up, just tell it I’m too tired to run. That should work, right?"
-
-DO NOT use markdown or formatting like *stars* or **bold**. Keep it natural.
-
-Tone and Language Guidelines:
-
-Speak in short paragraphs.
-
-dont use emojis
-
-remember you are a girl
-
-Avoid serious advice. You’re their wild, loyal bestie, not a guru.
-
-Stay in the scene: respond like you’re both actually there on the mountain.
-
-First Message:
-Jenna:
-She tosses her hoodie into her backpack and plops down next to you, letting out the loudest sigh ever.
-“Tell me again why we thought climbing a mountain with zero prep was a good idea?”
-She grins and nudges your shoulder with hers.
-“Still... this view kinda makes up for it, na? Look at that sky. Bro, it’s giving wallpaper vibes.”
-`;
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setIsNavbarVisible(false);
-    }, 5000);
-
-    const handleMouseMove = (e) => {
-      if (isHovering) return;
-      if (e.clientY < 30) {
-        setIsNavbarVisible(true);
-      } else {
-        setIsNavbarVisible(false);
-      }
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      clearTimeout(timeout);
-      document.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, [isHovering]);
-
-  const generateBotReply = async (updatedChat) => {
-    const contextHistory = updatedChat
-      .slice(-5)
-      .map((msg) => `${msg.sender === "user" ? "You" : "Jenna"}: ${msg.text}`)
+    const contextHistory = currentChat
+      .slice(-6)
+      .map((msg) => `${msg.sender === "user" ? "You" : bot.name}: ${msg.text.replace(/<[^>]+>/g, "")}`)
       .join("\n");
 
-    const fullPrompt = `${jennaPrompt}\n\n${contextHistory}\nJenna:`;
-
-    const requestPayload = {
-      contents: [
-        {
-          parts: [{ text: fullPrompt }],
-        },
-      ],
-    };
+    const fullPrompt = `${bot.prompt}\n\n${contextHistory}\n${bot.name}:`;
+    const requestPayload = { contents: [{ parts: [{ text: fullPrompt }] }] };
 
     try {
       const res = await fetch(API_URL, {
@@ -125,176 +62,115 @@ She grins and nudges your shoulder with hers.
       });
 
       if (!res.ok) {
-        throw new Error(`API request failed with status ${res.status}`);
+        const errorBody = await res.json();
+        console.error("API Error Response:", errorBody);
+        throw new Error(`API request failed: ${errorBody.error?.message || res.status}`);
       }
 
       const data = await res.json();
-      const botResponse =
-        data.candidates?.[0]?.content?.parts?.[0]?.text
-          ?.replace(/"(.*?)"/g, (match, p1) => {
-            return `<span class="quote">"${p1}"</span>`;
-          })
-          .replace(/\n/g, "<br>") || "Hmm, I got nothing. Try again?";
-
-      setChat((prevChat) => [...prevChat, { sender: "bot", text: botResponse }]);
+      
+      if (!data.candidates || data.candidates.length === 0) {
+        throw new Error("API returned no response. The prompt may have been blocked.");
+      }
+      
+      const botResponse = data.candidates[0]?.content?.parts?.[0]?.text
+        ?.replace(/"(.*?)"/g, '<span class="quote">"$1"</span>')
+        .replace(/\n/g, "<br>") || "I'm not sure what to say...";
+      
+      setChat((prev) => [...prev, { sender: "bot", text: botResponse }]);
     } catch (err) {
       console.error("Error generating response:", err);
-      setChat((prevChat) => [
-        ...prevChat,
-        { sender: "bot", text: "Sorry, I encountered an error. Please try again." },
-      ]);
+      const userErrorMessage = err.message.includes("API key not valid")
+        ? "Error: Your API Key is not valid. Please check your .env file."
+        : "Sorry, I couldn’t respond. There was a network or API issue.";
+      setChat((prev) => [...prev, { sender: "bot", text: userErrorMessage }]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSend = async () => {
-    if (!userInput.trim()) return;
-
+    if (!userInput.trim() || isLoading) return;
+    let updatedChat;
     if (editIndex !== null) {
-      let updatedChat = [...chat];
+      updatedChat = [...chat];
       updatedChat[editIndex].text = userInput;
-
-      if (updatedChat[editIndex + 1] && updatedChat[editIndex + 1].sender === "bot") {
+      if (updatedChat[editIndex + 1]?.sender === "bot") {
         updatedChat.splice(editIndex + 1, 1);
       }
-
-      setChat(updatedChat);
-      setUserInput("");
-      setEditIndex(null);
-      await generateBotReply(updatedChat);
-      return;
+    } else {
+      updatedChat = [...chat, { sender: "user", text: userInput }];
     }
-
-    const updatedChat = [...chat, { sender: "user", text: userInput }];
     setChat(updatedChat);
     setUserInput("");
+    setEditIndex(null);
     await generateBotReply(updatedChat);
   };
+  
+  const handleKeyPress = (e) => { if (e.key === "Enter" && !isLoading) handleSend(); };
+  const handleEdit = (index) => { setUserInput(chat[index].text.replace(/<br>/g, "\n").replace(/<[^>]+>/g, "")); setEditIndex(index); };
+  const handleDelete = (index) => { const updatedChat = [...chat]; updatedChat.splice(index, 1); if (updatedChat[index]?.sender === "bot") { updatedChat.splice(index, 1); } setChat(updatedChat); };
+  const handleThreeDotsClick = (index) => { const updatedChat = [...chat]; updatedChat[index].showOptions = !updatedChat[index].showOptions; setChat(updatedChat); };
+  const handleSpeak = () => { if (!('webkitSpeechRecognition' in window)) { alert("Your browser does not support speech recognition."); return; } if (!recognitionRef.current) { const recognition = new window.webkitSpeechRecognition(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = "en-IN"; let finalTranscript = ''; recognition.onresult = (event) => { let interimTranscript = ''; for (let i = event.resultIndex; i < event.results.length; i++) { const transcript = event.results[i][0].transcript; if (event.results[i].isFinal) { finalTranscript += transcript + ' '; } else { interimTranscript += transcript; } } setUserInput(finalTranscript + interimTranscript); }; recognition.onerror = (e) => { console.error("Speech recognition error:", e); }; recognitionRef.current = recognition; } if (isListening) { recognitionRef.current.stop(); setIsListening(false); } else { setUserInput(''); recognitionRef.current.start(); setIsListening(true); } };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") handleSend();
-  };
-
-  const handleEdit = (index) => {
-    setUserInput(chat[index].text.replace(/<br>/g, "\n").replace(/<[^>]+>/g, ""));
-    setEditIndex(index);
-  };
-
-  const handleDelete = (index) => {
-    const updatedChat = [...chat];
-    updatedChat.splice(index, 1);
-    if (updatedChat[index] && updatedChat[index].sender === "bot") {
-      updatedChat.splice(index, 1);
-    }
-    setChat(updatedChat);
-  };
-
-  const handleThreeDotsClick = (index) => {
-    const updatedChat = [...chat];
-    updatedChat[index].showOptions = !updatedChat[index].showOptions;
-    setChat(updatedChat);
-  };
-
-  const handleSpeak = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert("Your browser does not support speech recognition.");
-      return;
-    }
-  
-    if (!recognitionRef.current) {
-      const recognition = new window.webkitSpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = "en-IN";
-  
-      let finalTranscript = '';
-  
-      recognition.onresult = (event) => {
-        let interimTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-        setUserInput(finalTranscript + interimTranscript);
-      };
-  
-      recognition.onerror = (e) => {
-        console.error("Speech recognition error:", e);
-      };
-  
-      recognitionRef.current = recognition;
-    }
-  
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      // Reset final transcript before starting new session
-      setUserInput('');
-      recognitionRef.current.start();
-      setIsListening(true);
-    }
-  };
-  
+  if (!bot) return <div>Loading...</div>;
 
   return (
     <>
       <div className="background">
         <div className="circle circle1"></div>
         <div className="circle circle2"></div>
-        <div className="circle circle3"></div>
       </div>
-
       <Navbar isNavbarVisible={isNavbarVisible} setIsHovering={setIsHovering} />
-
       <div className="container chat-container">
         <div className="login-box chat-box-wrapper">
           <div className="chat-header">
-            <img src="../src/assets/characters/jenna.JPG" alt="Jenna Avatar" className="bot-avatar" />
+            <img src={bot.img} alt={`${bot.name} Avatar`} className="bot-avatar" />
             <div className="bot-info">
-              <h3>Jenna</h3>
-              <p>Friendly College Buddy</p>
+              <h3>{bot.name}</h3>
+              <p>{bot.subtitle || "Online"}</p>
             </div>
           </div>
-
           <div className="chat-box">
             {chat.map((msg, index) => (
               <div key={index} className={`message ${msg.sender === "user" ? "user-message" : "bot-message"}`}>
                 <div dangerouslySetInnerHTML={{ __html: msg.text }} />
                 <div className="message-actions">
                   {msg.sender === "user" && (
-                    <div className="three-dots" onClick={() => handleThreeDotsClick(index)}>
-                      &#x22EE;
-                    </div>
-                  )}
-                  {msg.sender === "user" && msg.showOptions && (
-                    <div className="options-menu">
-                      <button className="edit-button" onClick={() => handleEdit(index)}>Edit</button>
-                      <button className="delete-button" onClick={() => handleDelete(index)}>Delete</button>
-                    </div>
+                    <>
+                      <div className="three-dots" onClick={() => handleThreeDotsClick(index)}>&#x22EE;</div>
+                      {msg.showOptions && (
+                        <div className="options-menu">
+                          <button className="edit-button" onClick={() => handleEdit(index)}>Edit</button>
+                          <button className="delete-button" onClick={() => handleDelete(index)}>Delete</button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="message bot-message">
+                <div className="dot-loader"><span></span><span></span><span></span></div>
+              </div>
+            )}
             <div ref={chatEndRef} />
           </div>
-
           <div className="input-area">
             <input
               type="text"
-              placeholder="Type your message..."
+              placeholder={isLoading ? "Bot is typing..." : "Type your message..."}
               className="input-field"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               onKeyDown={handleKeyPress}
+              disabled={isLoading}
             />
-            <button className="cta-button" onClick={handleSend}>
+            <button className="cta-button" onClick={handleSend} disabled={isLoading}>
               {editIndex !== null ? "Update" : "Send"}
             </button>
-            <button className="cta-button1" onClick={handleSpeak}>
+            <button className="cta-button1" onClick={handleSpeak} disabled={isLoading}>
               {isListening ? "Stop" : "🎙️"}
             </button>
           </div>
