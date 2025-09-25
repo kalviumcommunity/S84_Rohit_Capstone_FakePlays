@@ -1,3 +1,4 @@
+// src/pages/CreateBot.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -6,10 +7,13 @@ import "../styles/style.css";
 function CreateBot() {
   const [botName, setBotName] = useState("");
   const [situation, setSituation] = useState("");
-  const [initialMessage, setInitialMessage] = useState(""); // <-- New state for the first message
+  const [initialMessage, setInitialMessage] = useState("");
   const [botImage, setBotImage] = useState(null);
   const [botImagePreview, setBotImagePreview] = useState(null);
+
   const navigate = useNavigate();
+  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+  const authToken = localStorage.getItem("token");
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -20,37 +24,68 @@ function CreateBot() {
   };
 
   const handleSubmit = () => {
-    // Updated validation to include the new field
     if (!botName || !situation || !botImage || !initialMessage) {
       alert("Please fill in all fields and upload an image.");
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const imageDataUrl = reader.result;
-      const botPath = `${botName.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${Date.now()}`;
+
+      const botPath =
+        botName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") + "-" + Date.now();
 
       const newBot = {
         path: botPath,
         name: botName,
         subtitle: "Custom Bot",
         img: imageDataUrl,
-        // The card description is a short snippet of the situation
-        desc: situation.substring(0, 150) + (situation.length > 150 ? "..." : ""),
-        // The new initial message is saved directly
-        initialMessage: initialMessage.replace(/\n/g, "<br>"), // Allow line breaks
-        // The situation is saved as the main AI prompt
+        desc:
+          situation.length > 150 ? situation.substring(0, 150) + "..." : situation,
+        initialMessage: initialMessage.replace(/\n/g, "<br>"),
         prompt: situation,
-        isCustom: true,
+        isCustom: true
       };
 
-      const existingBots = JSON.parse(localStorage.getItem("customBots")) || [];
+      if (authToken) {
+        try {
+          const res = await fetch(`${API_BASE}/api/custom-bots/upsert`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`
+            },
+            body: JSON.stringify(newBot)
+          });
+          if (!res.ok) {
+            if (res.status === 409) {
+              const msg = await res.json().catch(() => ({}));
+              alert(msg?.error || "Bot path already exists. Try renaming the bot.");
+            } else if (res.status === 413) {
+              alert("Image is too large. Please upload a smaller image.");
+            } else {
+              const msg = await res.json().catch(() => ({}));
+              alert(msg?.error || "Failed to save bot to server.");
+            }
+            return;
+          }
+          navigate("/main");
+          return;
+        } catch {
+          // fall through to local fallback
+        }
+      }
+
+      const existingBots = JSON.parse(localStorage.getItem("customBots") || "[]");
       existingBots.push(newBot);
       localStorage.setItem("customBots", JSON.stringify(existingBots));
-
       navigate("/main");
     };
+
     reader.readAsDataURL(botImage);
   };
 
@@ -60,36 +95,66 @@ function CreateBot() {
         <div className="circle circle1"></div>
         <div className="circle circle2"></div>
       </div>
-      <Navbar isNavbarVisible={true} />
+      <Navbar isNavbarVisible={true} setIsHovering={() => {}} />
       <div className="container chat-container">
         <div className="login-box chat-box-wrapper create-bot-box">
           <div className="chat-header">
-            {botImagePreview ? ( <img src={botImagePreview} alt="Bot Preview" className="bot-avatar" /> ) : ( <div className="bot-avatar placeholder">🤖</div> )}
+            {botImagePreview ? (
+              <img src={botImagePreview} alt="Bot Preview" className="bot-avatar" />
+            ) : (
+              <div className="bot-avatar placeholder" />
+            )}
             <div className="bot-info">
               <h3>Create a New Bot</h3>
               <p>Design your own AI character</p>
             </div>
           </div>
+
           <div className="bot-form">
             <div className="form-group">
               <label>Bot Name</label>
-              <input type="text" className="input-field" value={botName} onChange={(e) => setBotName(e.target.value)} placeholder="e.g., Alex, the Midnight DJ" />
+              <input
+                type="text"
+                className="input-field"
+                value={botName}
+                onChange={(e) => setBotName(e.target.value)}
+                placeholder="e.g., Alex, the Midnight DJ"
+              />
             </div>
-            {/* Field for the AI's core instructions */}
+
             <div className="form-group">
               <label>Situation (AI Prompt)</label>
-              <textarea className="input-field" rows="4" value={situation} onChange={(e) => setSituation(e.target.value)} placeholder="Describe the bot's personality, setting, and role. This is the main instruction for the AI."></textarea>
+              <textarea
+                className="input-field"
+                rows="4"
+                value={situation}
+                onChange={(e) => setSituation(e.target.value)}
+                placeholder="Describe the bot's personality, setting, and role."
+              />
             </div>
-            {/* New field for the bot's opening line */}
+
             <div className="form-group">
               <label>First Message</label>
-              <textarea className="input-field" rows="3" value={initialMessage} onChange={(e) => setInitialMessage(e.target.value)} placeholder="What does your bot say to start the conversation?"></textarea>
+              <textarea
+                className="input-field"
+                rows="3"
+                value={initialMessage}
+                onChange={(e) => setInitialMessage(e.target.value)}
+                placeholder="What does your bot say to start the conversation?"
+              />
             </div>
+
             <div className="form-group">
               <label>Upload Bot Image</label>
-              <input type="file" accept="image/*" onChange={handleImageUpload} className="file-input" />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="file-input"
+              />
             </div>
           </div>
+
           <div className="input-area">
             <button className="cta-button" onClick={handleSubmit}>
               Create Bot
@@ -99,6 +164,6 @@ function CreateBot() {
       </div>
     </>
   );
-};
+}
 
 export default CreateBot;

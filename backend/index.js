@@ -1,3 +1,4 @@
+// server/index.js
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -10,35 +11,36 @@ const authRoutes = require("./routes/authRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
 const Message = require("./models/Message");
 
-// NEW: saved chats
 const savedChatRoutes = require("./routes/savedChatRoutes");
+const customBotRoutes = require("./routes/customBotRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Increase body size limits to allow base64 image uploads from CreateBot
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use(passport.initialize());
 
-// Routes for authentication and chat
+// Existing routes
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
-app.use("/api/auth", authRoutes); // kept as-is to avoid altering existing file
+app.use("/api/auth", authRoutes);
 
-// NEW: Saved chats (protected)
+// Protected routes
 app.use("/api/saved-chats", authMiddleware, savedChatRoutes);
+app.use("/api/custom-bots", authMiddleware, customBotRoutes);
 
-// Protected message routes (unchanged)
+// Message CRUD (unchanged)
 app.post("/api/message", authMiddleware, async (req, res) => {
   try {
     const { message } = req.body;
     if (!req.user || !message) {
       return res.status(400).json({ error: "User and message are required" });
     }
-
     const newMessage = new Message({ user: req.user.id, message });
     await newMessage.save();
-
     res.status(201).json({ success: true, message: newMessage });
   } catch (error) {
     res.status(500).json({ error: "Server error" });
@@ -57,17 +59,14 @@ app.get("/api/message", authMiddleware, async (req, res) => {
 app.put("/api/message/:id", authMiddleware, async (req, res) => {
   try {
     const { message } = req.body;
-
     const updatedMessage = await Message.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
       { message },
       { new: true }
     );
-
     if (!updatedMessage) {
       return res.status(404).json({ error: "Message not found" });
     }
-
     res.json({ success: true, message: updatedMessage });
   } catch (error) {
     res.status(500).json({ error: "Server error" });
@@ -80,11 +79,9 @@ app.delete("/api/message/:id", authMiddleware, async (req, res) => {
       _id: req.params.id,
       user: req.user.id
     });
-
     if (!deletedMessage) {
       return res.status(404).json({ error: "Message not found" });
     }
-
     res.json({ success: true, response: "Message deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: "Server error" });

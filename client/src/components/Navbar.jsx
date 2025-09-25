@@ -1,9 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/style.css";
 import logo from "../assets/Group 1 (1).jpg";
 
 const Navbar = ({ isNavbarVisible, setIsHovering }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <nav
       className={`navbar ${!isNavbarVisible ? "hide-navbar" : ""}`}
@@ -24,7 +31,12 @@ const Navbar = ({ isNavbarVisible, setIsHovering }) => {
           </ul>
         </li>
         <li><a href="#">Contact</a></li>
-        <li><a href="#">About</a></li>
+        {/* Replaced About with Logout */}
+        <li>
+          <button className="logout-button" onClick={handleLogout}>
+            Logout
+          </button>
+        </li>
       </ul>
     </nav>
   );

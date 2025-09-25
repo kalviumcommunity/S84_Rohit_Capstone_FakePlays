@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useSpring } from "framer-motion";
 import Navbar from "../components/Navbar";
 import { botsData as predefinedBots } from "../botsData";
 import "../styles/style.css";
@@ -9,6 +9,7 @@ const TiltableCard = ({ children, onClick }) => {
   const ref = useRef(null);
   const rotateX = useSpring(0, { stiffness: 300, damping: 30, mass: 0.5 });
   const rotateY = useSpring(0, { stiffness: 300, damping: 30, mass: 0.5 });
+
   const handleMouseMove = (e) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
@@ -18,10 +19,12 @@ const TiltableCard = ({ children, onClick }) => {
     rotateY.set((offsetX / (rect.width / 2)) * rotateAmplitude);
     rotateX.set((offsetY / (rect.height / 2)) * -rotateAmplitude);
   };
+
   const handleMouseLeave = () => {
     rotateX.set(0);
     rotateY.set(0);
   };
+
   return (
     <motion.div
       ref={ref}
@@ -42,6 +45,9 @@ function Main() {
   const navigate = useNavigate();
   const [allCharacters, setAllCharacters] = useState([]);
 
+  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+  const authToken = localStorage.getItem("token");
+
   const createBotCharacter = {
     name: "✨ Create Your Own Bot",
     img: "/src/assets/characters/AI.jpg",
@@ -51,27 +57,84 @@ function Main() {
   };
 
   useEffect(() => {
-    // Capture token from query param once (after Google OAuth redirect)
+    // Keep previously added token-capture here if your OAuth flow redirects with ?token=
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     if (token) {
       localStorage.setItem("token", token);
-      // Clean URL
       const url = new URL(window.location.href);
       url.searchParams.delete("token");
       window.history.replaceState({}, "", url.toString());
     }
-
-    const customBots = JSON.parse(localStorage.getItem("customBots")) || [];
-    setAllCharacters([createBotCharacter, ...predefinedBots, ...customBots]);
   }, []);
 
-  const handleDeleteBot = (botPathToDelete) => {
+  useEffect(() => {
+    const load = async () => {
+      // Always include predefined and "create" card
+      const base = [createBotCharacter, ...predefinedBots];
+
+      // If authenticated, load user bots from backend
+      if (authToken) {
+        try {
+          const res = await fetch(`${API_BASE}/api/custom-bots`, {
+            headers: { Authorization: authToken }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const remoteBots =
+              (data?.bots || []).map((b) => ({
+                path: b.path,
+                name: b.name,
+                subtitle: b.subtitle || "Custom Bot",
+                img: b.img,
+                desc: b.desc || "",
+                initialMessage: b.initialMessage, // not used on card but present on detail fetch
+                prompt: "", // will be fetched per-bot if needed in Chat
+                isCustom: true
+              })) || [];
+            setAllCharacters([...base, ...remoteBots]);
+            return;
+          }
+        } catch {
+          // fall through to local fallback
+        }
+      }
+
+      // Fallback for unauthenticated or failed fetch: existing localStorage bots
+      const localBots = JSON.parse(localStorage.getItem("customBots") || "[]");
+      setAllCharacters([...base, ...localBots]);
+    };
+
+    load();
+  }, [authToken]);
+
+  const handleDeleteBot = async (botPathToDelete) => {
+    // Try server delete if authenticated
+    if (authToken) {
+      try {
+        const res = await fetch(`${API_BASE}/api/custom-bots/${botPathToDelete}`, {
+          method: "DELETE",
+          headers: { Authorization: authToken }
+        });
+        if (res.ok) {
+          setAllCharacters((prev) =>
+            prev.filter((b) => b.path !== botPathToDelete || b.path === "create-bot")
+          );
+          return;
+        }
+      } catch {
+        // fall back to local below
+      }
+    }
+
+    // Fallback: local removal to preserve previous behavior when not logged in
     if (window.confirm("Are you sure you want to delete this bot?")) {
-      const customBots = JSON.parse(localStorage.getItem("customBots")) || [];
+      const customBots = JSON.parse(localStorage.getItem("customBots") || "[]");
       const updatedBots = customBots.filter((bot) => bot.path !== botPathToDelete);
       localStorage.setItem("customBots", JSON.stringify(updatedBots));
-      setAllCharacters([createBotCharacter, ...predefinedBots, ...updatedBots]);
+      setAllCharacters((prev) =>
+        [createBotCharacter, ...predefinedBots, ...updatedBots]
+      );
     }
   };
 
@@ -97,7 +160,7 @@ function Main() {
                 <img src={char.img} alt={char.name} className="character-img" />
                 <h3 className="character-name">{char.name}</h3>
                 <p className="character-desc">{char.desc}</p>
-                {char.isCustom && (
+                {char.isCustom && char.path !== "create-bot" && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

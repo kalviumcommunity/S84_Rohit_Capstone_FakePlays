@@ -24,28 +24,65 @@ function Chat() {
   const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
   const authToken = localStorage.getItem("token");
 
-  // Load bot and attempt to restore saved chat
+  // Load bot (predefined -> backend -> local fallback) and then attempt to restore saved chat
   useEffect(() => {
-    const customBots = JSON.parse(localStorage.getItem("customBots")) || [];
-    const allBots = [...predefinedBots, ...customBots];
-    const currentBot = allBots.find((b) => b.path === botPath);
+    const resolveBot = async () => {
+      // 1) Predefined first
+      const pre = [...predefinedBots].find((b) => b.path === botPath);
+      if (pre) {
+        setBot(pre);
+        return pre;
+      }
 
-    if (currentBot) {
-      setBot(currentBot);
+      // 2) Backend if logged in
+      if (authToken) {
+        try {
+          const res = await fetch(`${API_BASE}/api/custom-bots/${botPath}`, {
+            headers: { Authorization: authToken }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.bot) {
+              const b = {
+                path: data.bot.path,
+                name: data.bot.name,
+                subtitle: data.bot.subtitle || "Custom Bot",
+                img: data.bot.img,
+                desc: data.bot.desc || "",
+                initialMessage: data.bot.initialMessage,
+                prompt: data.bot.prompt,
+                isCustom: true
+              };
+              setBot(b);
+              return b;
+            }
+          }
+        } catch {
+          // fall through
+        }
+      }
+
+      // 3) LocalStorage fallback to preserve behavior when not logged in
+      const localBots = JSON.parse(localStorage.getItem("customBots") || "[]");
+      const local = localBots.find((b) => b.path === botPath);
+      if (local) {
+        setBot(local);
+        return local;
+      }
+
+      // If still not found, leave
+      return null;
+    };
+
+    const init = async () => {
+      const currentBot = await resolveBot();
+      if (!currentBot) {
+        navigate("/main");
+        return;
+      }
 
       // Try loading saved chat if authenticated
-      const tryLoad = async () => {
-        if (!authToken) {
-          setChat([
-            {
-              sender: "bot",
-              text:
-                currentBot.initialMessage ||
-                `You are now chatting with ${currentBot.name}.`
-            }
-          ]);
-          return;
-        }
+      if (authToken) {
         try {
           const res = await fetch(`${API_BASE}/api/saved-chats/${currentBot.path}`, {
             headers: { Authorization: authToken }
@@ -58,23 +95,22 @@ function Chat() {
               return;
             }
           }
-        } catch (_) {
-          // fall back silently
+        } catch {
+          // ignore and fall back to initial message
         }
-        setChat([
-          {
-            sender: "bot",
-            text:
-              currentBot.initialMessage ||
-              `You are now chatting with ${currentBot.name}.`
-          }
-        ]);
-      };
+      }
 
-      tryLoad();
-    } else {
-      navigate("/main");
-    }
+      setChat([
+        {
+          sender: "bot",
+          text:
+            currentBot.initialMessage ||
+            `You are now chatting with ${currentBot.name}.`
+        }
+      ]);
+    };
+
+    init();
   }, [botPath, navigate]);
 
   useEffect(() => {
@@ -99,14 +135,13 @@ function Chat() {
         },
         body: JSON.stringify(payload)
       });
-    } catch (_) {
-      // no-op; saving is best-effort
+    } catch {
+      // best-effort save
     }
   };
 
   const generateBotReply = async (currentChat) => {
     if (!bot) return;
-
     setIsLoading(true);
 
     const contextHistory = currentChat
@@ -131,7 +166,6 @@ function Chat() {
 
       if (!res.ok) {
         const errorBody = await res.json();
-        console.error("API Error Response:", errorBody);
         throw new Error(
           `API request failed: ${errorBody.error?.message || res.status}`
         );
@@ -148,18 +182,16 @@ function Chat() {
       const botResponse =
         data.candidates[0]?.content?.parts?.[0]?.text
           ?.replace(/\"(.*?)\"/g, '<span class="quote">"$1"</span>')
-          .replace(/\n/g, "<br>") || "I'm not sure what to say...";
+          ?.replace(/\n/g, "<br>") || "I'm not sure what to say...";
 
       setChat((prev) => {
         const updated = [...prev, { sender: "bot", text: botResponse }];
-        // best-effort save
         saveChat(updated);
         return updated;
       });
     } catch (err) {
-      console.error("Error generating response:", err);
-      const userErrorMessage = err.message.includes("API key not valid")
-        ? "Error: Your API Key is not valid. Please check your .env file."
+      const userErrorMessage = err.message.includes("API request failed")
+        ? "Sorry, I couldn’t respond. There was a network or API issue."
         : "Sorry, I couldn’t respond. There was a network or API issue.";
       setChat((prev) => {
         const updated = [...prev, { sender: "bot", text: userErrorMessage }];
@@ -209,7 +241,6 @@ function Chat() {
       updatedChat.splice(index, 1);
     }
     setChat(updatedChat);
-    // Save after delete as well
     saveChat(updatedChat);
   };
   const handleThreeDotsClick = (index) => {
