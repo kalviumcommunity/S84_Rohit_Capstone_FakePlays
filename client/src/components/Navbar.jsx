@@ -25,8 +25,8 @@ const Navbar = ({ isNavbarVisible, setIsHovering }) => {
         <li className="dropdown">
           <a href="#">Features</a>
           <ul className="dropdown-menu">
-            <li><Link to="/saved-chats">Saved Chats</Link></li>
-            <li><a href="#">AI Avatars</a></li>
+            <li><Link to="/saved-chats">Saved Chats</Link></li>        
+             <li><Link to="/about">About</Link></li>   
             <li><a href="#">Voice Mode</a></li>
           </ul>
         </li>

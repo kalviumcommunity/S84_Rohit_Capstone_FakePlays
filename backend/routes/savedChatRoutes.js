@@ -1,3 +1,4 @@
+// server/routes/savedChatRoutes.js
 const express = require("express");
 const router = express.Router();
 const SavedChat = require("../models/SavedChat");
@@ -43,6 +44,20 @@ router.get("/:botPath", async (req, res) => {
     });
     if (!chat) return res.status(404).json({ error: "Not found" });
     res.json({ success: true, chat });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// NEW: Delete saved chat by botPath
+router.delete("/:botPath", async (req, res) => {
+  try {
+    const deleted = await SavedChat.findOneAndDelete({
+      user: req.user.id,
+      botPath: req.params.botPath
+    });
+    if (!deleted) return res.status(404).json({ error: "Not found" });
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }

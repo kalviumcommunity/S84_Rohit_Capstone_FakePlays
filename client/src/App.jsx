@@ -6,6 +6,7 @@ import Main from "./pages/Main";
 import Chat from "./pages/Chat";
 import CreateBot from "./pages/CreateBot";
 import SavedChats from "./pages/SavedChats";
+import About from "./pages/About";
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
 
         {/* New: Saved Chats */}
         <Route path="/saved-chats" element={<SavedChats />} />
+        <Route path="/about" element={<About />} />
+
       </Routes>
     </Router>
   );

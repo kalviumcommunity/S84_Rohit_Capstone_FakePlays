@@ -13,27 +13,54 @@ function SavedChats() {
   const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
   const authToken = localStorage.getItem("token");
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`${API_BASE}/api/saved-chats`, {
-          headers: { Authorization: authToken || "" }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setChats(data?.chats || []);
-        } else {
-          setChats([]);
-        }
-      } catch (_) {
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/saved-chats`, {
+        headers: { Authorization: authToken ? `Bearer ${authToken}` : "" }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setChats(data?.chats || []);
+      } else {
         setChats([]);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch {
+      setChats([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     load();
   }, []);
+
+  const handleDelete = async (botPath) => {
+    if (!authToken) {
+      alert("Please sign in to delete saved chats.");
+      return;
+    }
+    if (!window.confirm("Delete this saved chat? This cannot be undone.")) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/saved-chats/${encodeURIComponent(botPath)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${authToken}` }
+        }
+      );
+      if (res.ok) {
+        setChats((prev) => prev.filter((c) => c.botPath !== botPath));
+      } else {
+        const msg = await res.json().catch(() => ({}));
+        alert(msg?.error || "Failed to delete saved chat.");
+      }
+    } catch {
+      alert("Network error while deleting saved chat.");
+    }
+  };
 
   return (
     <>
@@ -63,17 +90,28 @@ function SavedChats() {
                   ?.replace(/<[^>]+>/g, "")
                   ?.slice(0, 150) || "";
               return (
-                <div className="card-perspective-wrapper" key={c._id || c.botPath}>
+                <div className="card-perspective-wrapper" key={c.botPath}>
                   <div
                     className="glass-box character-box"
                     onClick={() => navigate(`/chat/${c.botPath}`)}
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer", position: "relative" }}
                   >
                     <h3 className="character-name">{c.botName}</h3>
                     <p className="character-desc">{preview}</p>
                     <p className="character-desc">
                       Last updated: {new Date(c.updatedAt).toLocaleString()}
                     </p>
+                    <button
+                      className="delete-bot-button"
+                      title="Delete Saved Chat"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(c.botPath);
+                      }}
+                      style={{ position: "absolute", top: 8, right: 8 }}
+                    >
+                      ×
+                    </button>
                   </div>
                 </div>
               );
