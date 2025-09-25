@@ -9,9 +9,31 @@ const TiltableCard = ({ children, onClick }) => {
   const ref = useRef(null);
   const rotateX = useSpring(0, { stiffness: 300, damping: 30, mass: 0.5 });
   const rotateY = useSpring(0, { stiffness: 300, damping: 30, mass: 0.5 });
-  const handleMouseMove = (e) => { if (!ref.current) return; const rect = ref.current.getBoundingClientRect(); const offsetX = e.clientX - rect.left - rect.width / 2; const offsetY = e.clientY - rect.top - rect.height / 2; const rotateAmplitude = 15; rotateY.set((offsetX / (rect.width / 2)) * rotateAmplitude); rotateX.set((offsetY / (rect.height / 2)) * -rotateAmplitude); };
-  const handleMouseLeave = () => { rotateX.set(0); rotateY.set(0); };
-  return (<motion.div ref={ref} className="glass-box character-box" style={{ transformStyle: "preserve-3d", rotateX, rotateY, }} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onClick={onClick}>{children}</motion.div>);
+  const handleMouseMove = (e) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left - rect.width / 2;
+    const offsetY = e.clientY - rect.top - rect.height / 2;
+    const rotateAmplitude = 15;
+    rotateY.set((offsetX / (rect.width / 2)) * rotateAmplitude);
+    rotateX.set((offsetY / (rect.height / 2)) * -rotateAmplitude);
+  };
+  const handleMouseLeave = () => {
+    rotateX.set(0);
+    rotateY.set(0);
+  };
+  return (
+    <motion.div
+      ref={ref}
+      className="glass-box character-box"
+      style={{ transformStyle: "preserve-3d", rotateX, rotateY }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onClick={onClick}
+    >
+      {children}
+    </motion.div>
+  );
 };
 
 function Main() {
@@ -23,11 +45,23 @@ function Main() {
   const createBotCharacter = {
     name: "✨ Create Your Own Bot",
     img: "/src/assets/characters/AI.jpg",
-    desc: "Craft a custom character: choose a name, upload an image, and set the scenario. Make it yours.",
-    path: "create-bot",
+    desc:
+      "Craft a custom character: choose a name, upload an image, and set the scenario. Make it yours.",
+    path: "create-bot"
   };
 
   useEffect(() => {
+    // Capture token from query param once (after Google OAuth redirect)
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      // Clean URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete("token");
+      window.history.replaceState({}, "", url.toString());
+    }
+
     const customBots = JSON.parse(localStorage.getItem("customBots")) || [];
     setAllCharacters([createBotCharacter, ...predefinedBots, ...customBots]);
   }, []);
@@ -53,12 +87,27 @@ function Main() {
         <div className="boxes-container">
           {allCharacters.map((char) => (
             <div className="card-perspective-wrapper" key={char.path}>
-              <TiltableCard onClick={() => navigate(char.path === 'create-bot' ? '/create-bot' : `/chat/${char.path}`)}>
+              <TiltableCard
+                onClick={() =>
+                  navigate(
+                    char.path === "create-bot" ? "/create-bot" : `/chat/${char.path}`
+                  )
+                }
+              >
                 <img src={char.img} alt={char.name} className="character-img" />
                 <h3 className="character-name">{char.name}</h3>
                 <p className="character-desc">{char.desc}</p>
                 {char.isCustom && (
-                  <button onClick={(e) => { e.stopPropagation(); handleDeleteBot(char.path); }} className="delete-bot-button" title="Delete Bot">×</button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteBot(char.path);
+                    }}
+                    className="delete-bot-button"
+                    title="Delete Bot"
+                  >
+                    ×
+                  </button>
                 )}
               </TiltableCard>
             </div>

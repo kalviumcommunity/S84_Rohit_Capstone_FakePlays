@@ -3,25 +3,32 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const passport = require("passport");
-require("./passportSetup"); 
+require("./passportSetup");
 
 const chatRoutes = require("./routes/chat");
 const authRoutes = require("./routes/authRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
 const Message = require("./models/Message");
 
+// NEW: saved chats
+const savedChatRoutes = require("./routes/savedChatRoutes");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
 // Routes for authentication and chat
 app.use("/api/auth", authRoutes);
-app.use("/api/chat", chatRoutes); 
-app.use("/api/auth", authRoutes); 
+app.use("/api/chat", chatRoutes);
+app.use("/api/auth", authRoutes); // kept as-is to avoid altering existing file
 
-// Protected message routes
+// NEW: Saved chats (protected)
+app.use("/api/saved-chats", authMiddleware, savedChatRoutes);
+
+// Protected message routes (unchanged)
 app.post("/api/message", authMiddleware, async (req, res) => {
   try {
     const { message } = req.body;

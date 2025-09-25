@@ -20,6 +20,11 @@ function Chat() {
   const chatEndRef = useRef(null);
   const recognitionRef = useRef(null);
 
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
+  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+  const authToken = localStorage.getItem("token");
+
+  // Load bot and attempt to restore saved chat
   useEffect(() => {
     const customBots = JSON.parse(localStorage.getItem("customBots")) || [];
     const allBots = [...predefinedBots, ...customBots];
@@ -27,7 +32,46 @@ function Chat() {
 
     if (currentBot) {
       setBot(currentBot);
-      setChat([{ sender: "bot", text: currentBot.initialMessage || `You are now chatting with ${currentBot.name}.` }]);
+
+      // Try loading saved chat if authenticated
+      const tryLoad = async () => {
+        if (!authToken) {
+          setChat([
+            {
+              sender: "bot",
+              text:
+                currentBot.initialMessage ||
+                `You are now chatting with ${currentBot.name}.`
+            }
+          ]);
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/api/saved-chats/${currentBot.path}`, {
+            headers: { Authorization: authToken }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const saved = data?.chat?.messages;
+            if (Array.isArray(saved) && saved.length) {
+              setChat(saved.map((m) => ({ sender: m.sender, text: m.text })));
+              return;
+            }
+          }
+        } catch (_) {
+          // fall back silently
+        }
+        setChat([
+          {
+            sender: "bot",
+            text:
+              currentBot.initialMessage ||
+              `You are now chatting with ${currentBot.name}.`
+          }
+        ]);
+      };
+
+      tryLoad();
     } else {
       navigate("/main");
     }
@@ -39,16 +83,40 @@ function Chat() {
     }
   }, [chat]);
 
-  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
+  const saveChat = async (currentChat) => {
+    if (!authToken || !bot) return;
+    const payload = {
+      botPath: bot.path,
+      botName: bot.name,
+      messages: currentChat.map((m) => ({ sender: m.sender, text: m.text }))
+    };
+    try {
+      await fetch(`${API_BASE}/api/saved-chats/upsert`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authToken
+        },
+        body: JSON.stringify(payload)
+      });
+    } catch (_) {
+      // no-op; saving is best-effort
+    }
+  };
 
   const generateBotReply = async (currentChat) => {
     if (!bot) return;
-    
+
     setIsLoading(true);
 
     const contextHistory = currentChat
       .slice(-6)
-      .map((msg) => `${msg.sender === "user" ? "You" : bot.name}: ${msg.text.replace(/<[^>]+>/g, "")}`)
+      .map((msg) =>
+        `${msg.sender === "user" ? "You" : bot.name}: ${msg.text.replace(
+          /<[^>]+>/g,
+          ""
+        )}`
+      )
       .join("\n");
 
     const fullPrompt = `${bot.prompt}\n\n${contextHistory}\n${bot.name}:`;
@@ -58,32 +126,46 @@ function Chat() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestPayload),
+        body: JSON.stringify(requestPayload)
       });
 
       if (!res.ok) {
         const errorBody = await res.json();
         console.error("API Error Response:", errorBody);
-        throw new Error(`API request failed: ${errorBody.error?.message || res.status}`);
+        throw new Error(
+          `API request failed: ${errorBody.error?.message || res.status}`
+        );
       }
 
       const data = await res.json();
-      
+
       if (!data.candidates || data.candidates.length === 0) {
-        throw new Error("API returned no response. The prompt may have been blocked.");
+        throw new Error(
+          "API returned no response. The prompt may have been blocked."
+        );
       }
-      
-      const botResponse = data.candidates[0]?.content?.parts?.[0]?.text
-        ?.replace(/"(.*?)"/g, '<span class="quote">"$1"</span>')
-        .replace(/\n/g, "<br>") || "I'm not sure what to say...";
-      
-      setChat((prev) => [...prev, { sender: "bot", text: botResponse }]);
+
+      const botResponse =
+        data.candidates[0]?.content?.parts?.[0]?.text
+          ?.replace(/\"(.*?)\"/g, '<span class="quote">"$1"</span>')
+          .replace(/\n/g, "<br>") || "I'm not sure what to say...";
+
+      setChat((prev) => {
+        const updated = [...prev, { sender: "bot", text: botResponse }];
+        // best-effort save
+        saveChat(updated);
+        return updated;
+      });
     } catch (err) {
       console.error("Error generating response:", err);
       const userErrorMessage = err.message.includes("API key not valid")
         ? "Error: Your API Key is not valid. Please check your .env file."
         : "Sorry, I couldn’t respond. There was a network or API issue.";
-      setChat((prev) => [...prev, { sender: "bot", text: userErrorMessage }]);
+      setChat((prev) => {
+        const updated = [...prev, { sender: "bot", text: userErrorMessage }];
+        saveChat(updated);
+        return updated;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -104,14 +186,74 @@ function Chat() {
     setChat(updatedChat);
     setUserInput("");
     setEditIndex(null);
+
+    // Save immediately after user message
+    saveChat(updatedChat);
+
     await generateBotReply(updatedChat);
   };
-  
-  const handleKeyPress = (e) => { if (e.key === "Enter" && !isLoading) handleSend(); };
-  const handleEdit = (index) => { setUserInput(chat[index].text.replace(/<br>/g, "\n").replace(/<[^>]+>/g, "")); setEditIndex(index); };
-  const handleDelete = (index) => { const updatedChat = [...chat]; updatedChat.splice(index, 1); if (updatedChat[index]?.sender === "bot") { updatedChat.splice(index, 1); } setChat(updatedChat); };
-  const handleThreeDotsClick = (index) => { const updatedChat = [...chat]; updatedChat[index].showOptions = !updatedChat[index].showOptions; setChat(updatedChat); };
-  const handleSpeak = () => { if (!('webkitSpeechRecognition' in window)) { alert("Your browser does not support speech recognition."); return; } if (!recognitionRef.current) { const recognition = new window.webkitSpeechRecognition(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = "en-IN"; let finalTranscript = ''; recognition.onresult = (event) => { let interimTranscript = ''; for (let i = event.resultIndex; i < event.results.length; i++) { const transcript = event.results[i][0].transcript; if (event.results[i].isFinal) { finalTranscript += transcript + ' '; } else { interimTranscript += transcript; } } setUserInput(finalTranscript + interimTranscript); }; recognition.onerror = (e) => { console.error("Speech recognition error:", e); }; recognitionRef.current = recognition; } if (isListening) { recognitionRef.current.stop(); setIsListening(false); } else { setUserInput(''); recognitionRef.current.start(); setIsListening(true); } };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !isLoading) handleSend();
+  };
+  const handleEdit = (index) => {
+    setUserInput(
+      chat[index].text.replace(/<br>/g, "\n").replace(/<[^>]+>/g, "")
+    );
+    setEditIndex(index);
+  };
+  const handleDelete = (index) => {
+    const updatedChat = [...chat];
+    updatedChat.splice(index, 1);
+    if (updatedChat[index]?.sender === "bot") {
+      updatedChat.splice(index, 1);
+    }
+    setChat(updatedChat);
+    // Save after delete as well
+    saveChat(updatedChat);
+  };
+  const handleThreeDotsClick = (index) => {
+    const updatedChat = [...chat];
+    updatedChat[index].showOptions = !updatedChat[index].showOptions;
+    setChat(updatedChat);
+  };
+  const handleSpeak = () => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Your browser does not support speech recognition.");
+      return;
+    }
+    if (!recognitionRef.current) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-IN";
+      let finalTranscript = "";
+      recognition.onresult = (event) => {
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + " ";
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        setUserInput(finalTranscript + interimTranscript);
+      };
+      recognition.onerror = (e) => {
+        console.error("Speech recognition error:", e);
+      };
+      recognitionRef.current = recognition;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      setUserInput("");
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   if (!bot) return <div>Loading...</div>;
 
@@ -121,7 +263,10 @@ function Chat() {
         <div className="circle circle1"></div>
         <div className="circle circle2"></div>
       </div>
-      <Navbar isNavbarVisible={isNavbarVisible} setIsHovering={setIsHovering} />
+      <Navbar
+        isNavbarVisible={isNavbarVisible}
+        setIsHovering={setIsHovering}
+      />
       <div className="container chat-container">
         <div className="login-box chat-box-wrapper">
           <div className="chat-header">
@@ -133,16 +278,36 @@ function Chat() {
           </div>
           <div className="chat-box">
             {chat.map((msg, index) => (
-              <div key={index} className={`message ${msg.sender === "user" ? "user-message" : "bot-message"}`}>
+              <div
+                key={index}
+                className={`message ${
+                  msg.sender === "user" ? "user-message" : "bot-message"
+                }`}
+              >
                 <div dangerouslySetInnerHTML={{ __html: msg.text }} />
                 <div className="message-actions">
                   {msg.sender === "user" && (
                     <>
-                      <div className="three-dots" onClick={() => handleThreeDotsClick(index)}>&#x22EE;</div>
+                      <div
+                        className="three-dots"
+                        onClick={() => handleThreeDotsClick(index)}
+                      >
+                        &#x22EE;
+                      </div>
                       {msg.showOptions && (
                         <div className="options-menu">
-                          <button className="edit-button" onClick={() => handleEdit(index)}>Edit</button>
-                          <button className="delete-button" onClick={() => handleDelete(index)}>Delete</button>
+                          <button
+                            className="edit-button"
+                            onClick={() => handleEdit(index)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-button"
+                            onClick={() => handleDelete(index)}
+                          >
+                            Delete
+                          </button>
                         </div>
                       )}
                     </>
@@ -152,7 +317,11 @@ function Chat() {
             ))}
             {isLoading && (
               <div className="message bot-message">
-                <div className="dot-loader"><span></span><span></span><span></span></div>
+                <div className="dot-loader">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -178,6 +347,6 @@ function Chat() {
       </div>
     </>
   );
-};
+}
 
 export default Chat;
