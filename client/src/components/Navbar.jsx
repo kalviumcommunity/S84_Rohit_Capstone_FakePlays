@@ -11,6 +11,8 @@ const Navbar = ({ isNavbarVisible, setIsHovering }) => {
     navigate("/login");
   };
 
+  const isAuthed = Boolean(localStorage.getItem("token"));
+
   return (
     <nav
       className={`navbar ${!isNavbarVisible ? "hide-navbar" : ""}`}
@@ -21,22 +23,20 @@ const Navbar = ({ isNavbarVisible, setIsHovering }) => {
         <img src={logo} alt="FakePlays Logo" className="logo-img" />
       </div>
       <ul className="nav-menu">
-        <li><Link to="/main">Home</Link></li>
+        {isAuthed && <li><Link to="/main">Home</Link></li>}
         <li className="dropdown">
-          <a href="#">Features</a>
+          <a href="#">Settings</a>
           <ul className="dropdown-menu">
-            <li><Link to="/saved-chats">Saved Chats</Link></li>        
-             <li><Link to="/about">About</Link></li>   
-            <li><a href="#">Voice Mode</a></li>
+            {isAuthed && <li><Link to="/saved-chats">Saved Chats</Link></li>}
+            <li><Link to="/contact">Contact</Link></li>
+            <li>
+              <button className="logout-button" onClick={handleLogout}>
+                Logout
+              </button>
+            </li>
           </ul>
         </li>
-        <li><a href="#">Contact</a></li>
-        {/* Replaced About with Logout */}
-        <li>
-          <button className="logout-button" onClick={handleLogout}>
-            Logout
-          </button>
-        </li>
+        <li><Link to="/about">About</Link></li>
       </ul>
     </nav>
   );

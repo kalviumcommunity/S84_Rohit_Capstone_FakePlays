@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import { botsData as predefinedBots } from "../botsData";
 import "../styles/style.css";
 
+
 function Chat() {
   const { botPath } = useParams();
   const navigate = useNavigate();
@@ -19,6 +20,11 @@ function Chat() {
 
   const chatEndRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  // TTS: voices, speaking state, and guards (APPEND-ONLY)
+  const [voices, setVoices] = useState([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const initialBotSkippedRef = useRef(false);
 
   const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
   const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
@@ -118,6 +124,89 @@ function Chat() {
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [chat]);
+
+  // ====== APPEND-ONLY: TTS helpers and effects ======
+
+  // Pick a female/English voice if possible, else fall back deterministically
+  const pickVoice = () => {
+    if (!voices || !voices.length) return null;
+    const preferredNames = [
+      "Google UK English Female",
+      "Microsoft Zira - English (United States)",
+      "Samantha",
+      "Google US English"
+    ];
+    let v = voices.find(vo => preferredNames.includes(vo.name));
+    if (!v) v = voices.find(vo => /female/i.test(vo.name));
+    if (!v) v = voices.find(vo => vo.lang && vo.lang.toLowerCase().startsWith('en'));
+    return v || voices[0] || null;
+  };
+
+  // Strip HTML, then speak using Web Speech API
+  const speakText = (html) => {
+    if (!("speechSynthesis" in window)) {
+      alert("Text-to-speech not supported in this browser.");
+      return;
+    }
+    const synth = window.speechSynthesis;
+    synth.cancel(); // stop any previous utterance
+
+    // Convert HTML to plain text (quotes, <br>, etc.)
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    const text = (tmp.textContent || tmp.innerText || "").trim();
+    if (!text) return;
+
+    const utter = new SpeechSynthesisUtterance(text);
+    const v = pickVoice();
+    if (v) utter.voice = v;
+    utter.rate = 1.0;
+    utter.pitch = 1.0;
+    utter.volume = 1.0;
+
+    utter.onstart = () => setIsSpeaking(true);
+    utter.onend = () => setIsSpeaking(false);
+    utter.onerror = () => setIsSpeaking(false);
+
+    synth.speak(utter);
+  };
+
+  // Load available voices and refresh when voices list changes
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const synth = window.speechSynthesis;
+
+    const loadVoices = () => setVoices(synth.getVoices());
+    loadVoices(); // some browsers populate immediately, others later
+    synth.addEventListener("voiceschanged", loadVoices);
+
+    return () => synth.removeEventListener("voiceschanged", loadVoices);
+  }, []);
+
+  // Cancel any ongoing speech on unmount (safety)
+  useEffect(() => {
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+      }
+    };
+  }, []);
+
+  // REMOVED auto-speak effect so speech only happens on button click
+  // useEffect(() => {
+  //   if (!chat.length) return;
+  //   const last = chat[chat.length - 1];
+  //   if (last.sender === "bot") {
+  //     if (!initialBotSkippedRef.current) {
+  //       initialBotSkippedRef.current = true;
+  //       return;
+  //     }
+  //     speakText(last.text);
+  //   }
+  // }, [chat]);
+
+  // ====== END TTS additions ======
 
   const saveChat = async (currentChat) => {
     if (!authToken || !bot) return;
@@ -316,6 +405,26 @@ function Chat() {
                 }`}
               >
                 <div dangerouslySetInnerHTML={{ __html: msg.text }} />
+                {/* APPEND-ONLY: Speaker button for bot messages, bottom-right */}
+                {msg.sender !== "user" && (
+                  <button
+                    className="speak-btn"
+                    onClick={() => {
+                      if (isSpeaking) {
+                        if ("speechSynthesis" in window) {
+                          window.speechSynthesis.cancel();
+                        }
+                        setIsSpeaking(false);
+                      } else {
+                        speakText(msg.text);
+                      }
+                    }}
+                    title={isSpeaking ? "Stop speaking" : "Speak"}
+                    aria-label={isSpeaking ? "Stop speaking" : "Speak"}
+                  >
+                    {isSpeaking ? "⏹️" : "🔊"}
+                  </button>
+                )}
                 <div className="message-actions">
                   {msg.sender === "user" && (
                     <>
