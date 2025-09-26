@@ -20,7 +20,7 @@ function Chat() {
   const chatEndRef = useRef(null);
   const recognitionRef = useRef(null);
 
-  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
   const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
   const authToken = localStorage.getItem("token");
 
