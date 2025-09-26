@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { botsData as predefinedBots } from "../botsData";
 import "../styles/style.css";
 
+
 const TiltableCard = ({ children, onClick }) => {
   const ref = useRef(null);
   const rotateX = useSpring(0, { stiffness: 300, damping: 30, mass: 0.5 });
@@ -39,11 +40,15 @@ const TiltableCard = ({ children, onClick }) => {
   );
 };
 
+
 function Main() {
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
   const [allCharacters, setAllCharacters] = useState([]);
+
+  // NEW: controlled search term state
+  const [searchTerm, setSearchTerm] = useState("");
 
   const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
   const authToken = localStorage.getItem("token");
@@ -138,6 +143,21 @@ function Main() {
     }
   };
 
+  // NEW: derived, filtered list based on searchTerm (case-insensitive)
+  const visibleCharacters = React.useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return allCharacters;
+    return allCharacters.filter((c) => {
+      const fields = [
+        c.name || "",
+        c.desc || "",
+        c.subtitle || "",
+        c.path || ""
+      ];
+      return fields.some((f) => f.toLowerCase().includes(q));
+    });
+  }, [allCharacters, searchTerm]);
+
   return (
     <>
       <div className="background">
@@ -146,9 +166,16 @@ function Main() {
       </div>
       <Navbar isNavbarVisible={isNavbarVisible} setIsHovering={setIsHovering} />
       <div className="main-content">
-        <input type="text" className="search-bar" placeholder="Search characters..." />
+        {/* NEW: controlled search input */}
+        <input
+          type="text"
+          className="search-bar"
+          placeholder="Search characters..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         <div className="boxes-container">
-          {allCharacters.map((char) => (
+          {visibleCharacters.map((char) => (
             <div className="card-perspective-wrapper" key={char.path}>
               <TiltableCard
                 onClick={() =>

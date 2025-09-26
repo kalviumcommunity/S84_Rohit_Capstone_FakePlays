@@ -916,3 +916,144 @@ body {
   background: rgba(236, 137, 28, 0.18);
   border-color: rgba(236, 137, 28, 0.45);
 }
+
+/* Elevate navbar above all blurred layers */
+.navbar {
+  position: relative;            /* already set implicitly; keep explicit for clarity */
+  isolation: isolate;            /* force a new stacking context for reliable layering */
+  z-index: 4000;                 /* higher than any page glass/blur sections */
+}
+
+/* Ensure dropdown overlays all content (login/signup glass boxes, backgrounds) */
+.dropdown-menu {
+  position: absolute;            /* already absolute; keep to ensure stacking */
+  z-index: 9999;                 /* sit above other stacking contexts */
+}
+
+/* Optional hardening: keep the hover trigger above neighbors */
+.dropdown {
+  position: relative;
+  z-index: 5000;
+}
+
+/* Bot card description: enable smooth vertical scrolling with a little padding */
+.character-desc {
+  max-height: 90px;                 /* a touch taller than 80px to reduce cramped feel */
+  overflow-y: auto;                  /* turn scrolling back on when needed */
+  overflow-x: hidden;                /* avoid horizontal jiggle */
+  padding: 0 8px 8px;                /* small inner space so text isn’t glued to scrollbar */
+  line-height: 1.4;                  /* readable, compact lines */
+  -ms-overflow-style: none;         /* IE/old Edge hide scrollbar */
+  scrollbar-width: none;    
+}
+
+/* Firefox: show a thin scrollbar (not hidden) */
+.character-desc {
+  scrollbar-width: thin;             /* visible but minimal */
+  scrollbar-color: rgba(255,255,255,0.35) rgba(255,255,255,0.12);
+}
+
+/* WebKit/Blink: visible, slim scrollbar that matches glass UI */
+.character-desc::-webkit-scrollbar {
+  width: 6px;
+}
+.character-desc::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.10);
+}
+.character-desc::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 6px;
+}
+.character-desc::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* Slight card compaction to reclaim the “gap” without collapsing layout */
+.glass-box.character-box {
+  padding: 9px;                      /* subtle trim while keeping the glass feel */
+}
+/* Hide scrollbar but keep vertical scroll for bot cards */
+.character-desc {
+  max-height: 90px;                 /* keep a bit of room for content */
+  overflow-y: auto;                 /* scrolling works when needed */
+  overflow-x: hidden;               /* avoid sideways jiggle */
+  padding: 0 8px 8px;               /* a little inner space near the edge */
+  line-height: 1.55;                 /* readable, compact lines */
+
+  /* Hide scrollbar visuals across browsers, keep scroll enabled */
+  -ms-overflow-style: none;         /* IE/old Edge hide scrollbar */
+  scrollbar-width: none;            /* Firefox hides scrollbar, scrolling remains */
+}
+
+/* WebKit/Blink: hide scrollbar while preserving scroll */
+.character-desc::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Contact links grid */
+.contact-links {
+  display: grid;                                    /* responsive grid for cards */
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+
+/* Glassy contact cards */
+.contact-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.10);            /* translucent for frosted look */
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover/active feedback */
+.contact-card:hover {
+  transform: translateY(-1px) scale(1.02);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.30);
+}
+.contact-card:active {
+  transform: translateY(0) scale(1.01);
+}
+
+/* Icon + label styling */
+.contact-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.contact-label {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+/* Simple, readable typography for About text (no extra boxes) */
+#about-text {
+  max-width: 68ch;                                  
+  text-align: center;
+  margin: 0 auto;                                      
+  font-size: clamp(0.98rem, 0.9rem + 0.3vw, 1.12rem);  
+  line-height: 1.7;                                    
+  letter-spacing: 0.1px;                              
+  color: #ececec;                                                 
+  margin-left: auto !important;    
+  margin-right: auto !important;   
+  text-align: center;
+}
+
+/* Slight tweak for very small screens */
+@media (max-width: 360px) {
+  #about-text { line-height: 1.6; }
+}

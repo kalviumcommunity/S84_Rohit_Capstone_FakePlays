@@ -7,6 +7,7 @@ import Chat from "./pages/Chat";
 import CreateBot from "./pages/CreateBot";
 import SavedChats from "./pages/SavedChats";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 // Redirect unauthenticated users to /signup for protected routes
 const RequireAuth = ({ children }) => {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/contact" element={<Contact />} />
 
         {/* Protected pages: redirect to /signup if not authed */}
         <Route

@@ -24,11 +24,12 @@ function About() {
 
           <div className="bot-form" style={{ padding: "12px 0" }}>
             <div className="form-group">
-              <p className="character-desc" style={{ margin: 0 }}>
-                This project is an AI character chat platform with customizable bots, saved
-                conversations, and voice input. It supports secure auth, per-user saved chats
-                in the backend, and a clean, responsive UI. Edit this text anytime to describe
-                goals, tech stack, or release notes.
+              {/* Switched from className='character-desc' to id='about-text' */}
+              <p id="about-text" style={{ margin: 0 }}>
+                FakePlays is a private, judgment‑free AI chat space where anyone can talk openly,
+                 feel heard, and get friendly, human‑like replies day or night. Build a personal 
+                 support system by creating custom bots tailored to different moods, topics, or goals—no restrictions,
+                  no pressure, and no complicated setup. Whether processing a breakup, navigating stress or low days, or just needing a calm place to vent, conversations stay secure and focused on gentle guidance, reflection, and small, helpful steps. The experience is designed to feel like chatting with a kind friend: approachable tone, clear options, and quick responses that respect boundaries and privacy. Everything essential is free, so support is always within reach, and there are no paywalls in the way of a good conversation. Share ideas, issues, or feature requests anytime through the Contact section—feedback directly shapes improvements, keeps vibes friendly and authentic, and helps the platform grow with the community.
               </p>
             </div>
           </div>
