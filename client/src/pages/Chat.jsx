@@ -27,7 +27,7 @@ function Chat() {
   const initialBotSkippedRef = useRef(false);
 
   const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
-  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+  const API_BASE = import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com/";
   const authToken = localStorage.getItem("token");
 
   // Load bot (predefined -> backend -> local fallback) and then attempt to restore saved chat

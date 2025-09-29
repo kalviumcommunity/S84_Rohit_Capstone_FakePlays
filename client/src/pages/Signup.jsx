@@ -33,7 +33,7 @@ function Signup() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch("https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
@@ -128,7 +128,7 @@ function Signup() {
 
           <div className="google-login-wrapper">
             <p className="or-text">or</p>
-            <a href="http://localhost:5000/api/auth/google" className="google-button">
+            <a href="https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/google" className="google-button">
               <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google icon" />
               Sign up with Google
             </a>

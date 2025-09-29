@@ -15,7 +15,7 @@ const savedChatRoutes = require("./routes/savedChatRoutes");
 const customBotRoutes = require("./routes/customBotRoutes");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; 
 
 // Increase body size limits to allow base64 image uploads from CreateBot
 app.use(cors());
@@ -89,10 +89,7 @@ app.delete("/api/message/:id", authMiddleware, async (req, res) => {
 });
 
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 

@@ -38,7 +38,7 @@ function Login() {
     setErrorMessage(""); // Reset previous error
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch("https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -145,7 +145,7 @@ function Login() {
           <div className="google-login-wrapper">
             <p className="or-text">or</p>
             <a
-              href="http://localhost:5000/api/auth/google"
+              href="https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/google"
               className="google-button"
             >
               <img
