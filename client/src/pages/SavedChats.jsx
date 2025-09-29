@@ -10,14 +10,21 @@ function SavedChats() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com/";
+  const API_BASE =
+    (import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com").replace(/\/$/, "");
   const authToken = localStorage.getItem("token");
 
-  const load = async () => {
+  const loadSavedChats = async () => {
     setLoading(true);
+    if (!authToken) {
+      setChats([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`${API_BASE}/api/saved-chats`, {
-        headers: { Authorization: authToken ? `Bearer ${authToken}` : "" }
+        headers: { Authorization: `Bearer ${authToken}` },
       });
       if (res.ok) {
         const data = await res.json();
@@ -25,7 +32,8 @@ function SavedChats() {
       } else {
         setChats([]);
       }
-    } catch {
+    } catch (err) {
+      console.error("Error fetching saved chats:", err);
       setChats([]);
     } finally {
       setLoading(false);
@@ -33,7 +41,7 @@ function SavedChats() {
   };
 
   useEffect(() => {
-    load();
+    loadSavedChats();
   }, []);
 
   const handleDelete = async (botPath) => {
@@ -44,20 +52,18 @@ function SavedChats() {
     if (!window.confirm("Delete this saved chat? This cannot be undone.")) return;
 
     try {
-      const res = await fetch(
-        `${API_BASE}/api/saved-chats/${encodeURIComponent(botPath)}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${authToken}` }
-        }
-      );
+      const res = await fetch(`${API_BASE}/api/saved-chats/${encodeURIComponent(botPath)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       if (res.ok) {
         setChats((prev) => prev.filter((c) => c.botPath !== botPath));
       } else {
         const msg = await res.json().catch(() => ({}));
         alert(msg?.error || "Failed to delete saved chat.");
       }
-    } catch {
+    } catch (err) {
+      console.error("Error deleting chat:", err);
       alert("Network error while deleting saved chat.");
     }
   };
@@ -68,18 +74,14 @@ function SavedChats() {
         <div className="circle circle1"></div>
         <div className="circle circle2"></div>
       </div>
-      <Navbar
-        isNavbarVisible={isNavbarVisible}
-        setIsHovering={setIsHovering}
-      />
+      <Navbar isNavbarVisible={isNavbarVisible} setIsHovering={setIsHovering} />
       <div className="main-content">
         <h2 style={{ color: "white", marginBottom: "12px" }}>Saved Chats</h2>
+
         {loading ? (
           <div className="login-box chat-box-wrapper">Loading...</div>
         ) : !authToken ? (
-          <div className="login-box chat-box-wrapper">
-            Sign in is required to view saved chats.
-          </div>
+          <div className="login-box chat-box-wrapper">Sign in is required to view saved chats.</div>
         ) : chats.length === 0 ? (
           <div className="login-box chat-box-wrapper">No saved chats yet.</div>
         ) : (
@@ -99,7 +101,7 @@ function SavedChats() {
                     <h3 className="character-name">{c.botName}</h3>
                     <p className="character-desc">{preview}</p>
                     <p className="character-desc">
-                      Last updated: {new Date(c.updatedAt).toLocaleString()}
+                      Last updated: {c.updatedAt ? new Date(c.updatedAt).toLocaleString() : "N/A"}
                     </p>
                     <button
                       className="delete-bot-button"

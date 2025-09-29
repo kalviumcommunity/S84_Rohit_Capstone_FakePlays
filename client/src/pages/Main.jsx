@@ -55,7 +55,7 @@ function Main() {
     img: "/characters/AI.jpg",
     desc:
       "Craft a custom character: choose a name, upload an image, and set the scenario. Make it yours.",
-    path: "create-bot"
+    path: "create-bot",
   };
 
   useEffect(() => {
@@ -78,8 +78,8 @@ function Main() {
           const res = await fetch(`${API_BASE.replace(/\/$/, "")}/api/custom-bots`, {
             headers: {
               Authorization: `Bearer ${authToken}`,
-              "Content-Type": "application/json"
-            }
+              "Content-Type": "application/json",
+            },
           });
 
           if (res.ok) {
@@ -92,7 +92,7 @@ function Main() {
               desc: b.desc || "",
               initialMessage: b.initialMessage,
               prompt: "",
-              isCustom: true
+              isCustom: true,
             }));
             setAllCharacters([...base, ...remoteBots]);
             return;
@@ -115,10 +115,10 @@ function Main() {
     if (authToken) {
       try {
         const res = await fetch(
-          `${API_BASE.replace(/\/$/, "")}/api/custom-bots/${botPathToDelete}`,
+          `${API_BASE.replace(/\/$/, "")}/api/custom-bots/${encodeURIComponent(botPathToDelete)}`,
           {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers: { Authorization: `Bearer ${authToken}` },
           }
         );
         if (res.ok) {
@@ -128,7 +128,7 @@ function Main() {
           return;
         }
       } catch {
-        // fall back to local
+        // fallback to local
       }
     }
 
@@ -144,9 +144,7 @@ function Main() {
     const q = searchTerm.trim().toLowerCase();
     if (!q) return allCharacters;
     return allCharacters.filter((c) =>
-      [c.name, c.desc, c.subtitle, c.path].some((f) =>
-        (f || "").toLowerCase().includes(q)
-      )
+      [c.name, c.desc, c.subtitle, c.path].some((f) => (f || "").toLowerCase().includes(q))
     );
   }, [allCharacters, searchTerm]);
 
