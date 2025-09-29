@@ -27,7 +27,7 @@ function Chat() {
   const initialBotSkippedRef = useRef(false);
 
   const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
-  const API_BASE = import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com/";
+ const API_BASE = (import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com").replace(/\/$/, "");
   const authToken = localStorage.getItem("token");
 
   // Load bot (predefined -> backend -> local fallback) and then attempt to restore saved chat
@@ -44,8 +44,8 @@ function Chat() {
     if (authToken) {
       try {
         // Ensure single slash and proper URL encoding
-        const res = await fetch(`${API_BASE.replace(/\/$/, "")}/api/custom-bots/${encodeURIComponent(botPath)}`, {
-          headers: { Authorization: authToken }
+  const res = await fetch(`${API_BASE}/api/custom-bots/${encodeURIComponent(botPath)}`, {
+  headers: { Authorization: authToken }
         });
         if (res.ok) {
           const data = await res.json();
@@ -92,8 +92,8 @@ function Chat() {
     // Load saved chat if authenticated
     if (authToken) {
       try {
-        const res = await fetch(`${API_BASE.replace(/\/$/, "")}/api/saved-chats/${encodeURIComponent(currentBot.path)}`, {
-          headers: { Authorization: authToken }
+    const res = await fetch(`${API_BASE}/api/saved-chats/${encodeURIComponent(currentBot.path)}`, {
+  headers: { Authorization: authToken }
         });
         if (res.ok) {
           const data = await res.json();
