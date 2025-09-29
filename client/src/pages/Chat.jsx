@@ -32,78 +32,92 @@ function Chat() {
 
   // Load bot (predefined -> backend -> local fallback) and then attempt to restore saved chat
   useEffect(() => {
-const resolveBot = async () => {
-  // 1) Predefined first
-  const pre = predefinedBots.find((b) => b.path === botPath);
-  if (pre) return setBot(pre), pre;
-
-  // 2) Backend if logged in
-  if (authToken) {
-    try {
-      const res = await fetch(`${API_BASE}/api/custom-bots/${botPath}`, {
-        headers: { Authorization: authToken }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.bot) {
-          const b = {
-            path: data.bot.path,
-            name: data.bot.name,
-            subtitle: data.bot.subtitle || "Custom Bot",
-            img: data.bot.img,
-            desc: data.bot.desc || "",
-            initialMessage: data.bot.initialMessage,
-            prompt: data.bot.prompt,
-            isCustom: true
-          };
-          setBot(b);
-          return b;
-        }
-      }
-    } catch {
-      // silently ignore errors
+  const resolveBot = async () => {
+    // 1) Predefined bots first
+    const pre = predefinedBots.find((b) => b.path === botPath);
+    if (pre) {
+      setBot(pre);
+      return pre;
     }
-  }
 
-  // 3) LocalStorage fallback
-  const localBots = JSON.parse(localStorage.getItem("customBots") || "[]");
-  const local = localBots.find((b) => b.path === botPath);
-  if (local) return setBot(local), local;
-
-  return null; // fallback if bot not found
-};
-
-const init = async () => {
-  const currentBot = await resolveBot();
-  if (!currentBot) return navigate("/main");
-
-  if (authToken) {
-    try {
-      const res = await fetch(`${API_BASE}/api/saved-chats/${currentBot.path}`, {
-        headers: { Authorization: authToken }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const saved = data?.chat?.messages;
-        if (Array.isArray(saved) && saved.length) {
-          setChat(saved.map((m) => ({ sender: m.sender, text: m.text })));
-          return;
+    // 2) Backend fetch if logged in
+    if (authToken) {
+      try {
+        // Ensure single slash and proper URL encoding
+        const res = await fetch(`${API_BASE.replace(/\/$/, "")}/api/custom-bots/${encodeURIComponent(botPath)}`, {
+          headers: { Authorization: authToken }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.bot) {
+            const b = {
+              path: data.bot.path,
+              name: data.bot.name,
+              subtitle: data.bot.subtitle || "Custom Bot",
+              img: data.bot.img,
+              desc: data.bot.desc || "",
+              initialMessage: data.bot.initialMessage,
+              prompt: data.bot.prompt,
+              isCustom: true
+            };
+            setBot(b);
+            return b;
+          }
+        } else if (res.status === 404) {
+          console.warn("Bot not found on backend");
         }
+      } catch (err) {
+        console.error("Error fetching custom bot:", err);
       }
-    } catch {
-      // silently ignore errors
     }
-  }
 
-  setChat([{
-    sender: "bot",
-    text: currentBot.initialMessage || `You are now chatting with ${currentBot.name}.`
-  }]);
-};
+    // 3) LocalStorage fallback
+    const localBots = JSON.parse(localStorage.getItem("customBots") || "[]");
+    const local = localBots.find((b) => b.path === botPath);
+    if (local) {
+      setBot(local);
+      return local;
+    }
 
-init();
+    return null; // Bot not found
+  };
 
-  }, [botPath, navigate]);
+  const init = async () => {
+    const currentBot = await resolveBot();
+    if (!currentBot) {
+      navigate("/main");
+      return;
+    }
+
+    // Load saved chat if authenticated
+    if (authToken) {
+      try {
+        const res = await fetch(`${API_BASE.replace(/\/$/, "")}/api/saved-chats/${encodeURIComponent(currentBot.path)}`, {
+          headers: { Authorization: authToken }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const saved = data?.chat?.messages;
+          if (Array.isArray(saved) && saved.length) {
+            setChat(saved.map((m) => ({ sender: m.sender, text: m.text })));
+            return;
+          }
+        }
+      } catch {
+        // silently ignore
+      }
+    }
+
+    // Default initial message
+    setChat([{
+      sender: "bot",
+      text: currentBot.initialMessage || `You are now chatting with ${currentBot.name}.`
+    }]);
+  };
+
+  init();
+}, [botPath, navigate]);
+
 
   useEffect(() => {
     if (chat.length > 1) {
