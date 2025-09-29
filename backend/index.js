@@ -19,8 +19,8 @@ const PORT = process.env.PORT || 5000;
 
 // ----------- CORS Setup -----------
 const allowedOrigins = [
-  "http://localhost:5173",         // Local Vite frontend
-  "https://fake-plays.netlify.app/",  // Example deployed frontend
+  "http://localhost:5173",       // Local Vite frontend
+  "https://fake-plays.netlify.app" // Deployed Netlify frontend
 ];
 
 app.use(
@@ -28,10 +28,8 @@ app.use(
     origin: function (origin, callback) {
       // Allow requests with no origin (like Postman or mobile apps)
       if (!origin) return callback(null, true);
-
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = "CORS policy does not allow access from this origin.";
-        return callback(new Error(msg), false);
+      if (!allowedOrigins.includes(origin)) {
+        return callback(new Error("CORS policy does not allow access from this origin."), false);
       }
       return callback(null, true);
     },
@@ -47,7 +45,6 @@ app.use(passport.initialize());
 // ----------- Routes -----------
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
-app.use("/api/auth", authRoutes);
 
 // Protected routes
 app.use("/api/saved-chats", authMiddleware, savedChatRoutes);
