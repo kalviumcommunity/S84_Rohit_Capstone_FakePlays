@@ -55,7 +55,7 @@ function Main() {
 
   const createBotCharacter = {
     name: "✨ Create Your Own Bot",
-    img: "/src/assets/characters/AI.jpg",
+    img: "/characters/AI.jpg",
     desc:
       "Craft a custom character: choose a name, upload an image, and set the scenario. Make it yours.",
     path: "create-bot"
