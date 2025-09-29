@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 5000;
 // ----------- CORS Setup -----------
 const allowedOrigins = [
   "http://localhost:5173",         // Local Vite frontend
-  "https://fakeplays.vercel.app",  // Example deployed frontend
+  "https://fake-plays.netlify.app/",  // Example deployed frontend
 ];
 
 app.use(
