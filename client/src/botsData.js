@@ -4,7 +4,7 @@ export const botsData = [
     path: "jenna-chat",
     name: "Jenna",
     subtitle: "Your Best Friend",
-    img: "/src/assets/characters/jenna.JPG",
+    img: "/characters/jenna.JPG",
     desc: "You're on a spontaneous mountain trip with Jenna, your female bestie. She's the chaos to your calm, your safe space when things get wild. The vibe is unmatched.",
     initialMessage: `She tosses her hoodie into her backpack and plops down next to you, letting out the loudest sigh ever.<br><br>
         <span class="quote">"Tell me again why we thought climbing a mountain with zero prep was a good idea?"</span><br><br>
