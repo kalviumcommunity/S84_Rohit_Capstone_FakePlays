@@ -15,15 +15,36 @@ const savedChatRoutes = require("./routes/savedChatRoutes");
 const customBotRoutes = require("./routes/customBotRoutes");
 
 const app = express();
-const PORT = process.env.PORT || 5000; 
+const PORT = process.env.PORT || 5000;
 
-// Increase body size limits to allow base64 image uploads from CreateBot
-app.use(cors());
+// ----------- CORS Setup -----------
+const allowedOrigins = [
+  "http://localhost:5173",         // Local Vite frontend
+  "https://fakeplays.vercel.app",  // Example deployed frontend
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like Postman or mobile apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = "CORS policy does not allow access from this origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true, // Allow cookies / auth headers
+  })
+);
+
+// ----------- Middleware -----------
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use(passport.initialize());
 
-// Existing routes
+// ----------- Routes -----------
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/auth", authRoutes);
@@ -32,7 +53,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/saved-chats", authMiddleware, savedChatRoutes);
 app.use("/api/custom-bots", authMiddleware, customBotRoutes);
 
-// Message CRUD (unchanged)
+// ----------- Message CRUD -----------
 app.post("/api/message", authMiddleware, async (req, res) => {
   try {
     const { message } = req.body;
@@ -77,7 +98,7 @@ app.delete("/api/message/:id", authMiddleware, async (req, res) => {
   try {
     const deletedMessage = await Message.findOneAndDelete({
       _id: req.params.id,
-      user: req.user.id
+      user: req.user.id,
     });
     if (!deletedMessage) {
       return res.status(404).json({ error: "Message not found" });
@@ -88,11 +109,13 @@ app.delete("/api/message/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// ----------- MongoDB Connection -----------
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
+// ----------- Start Server -----------
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
