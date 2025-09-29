@@ -64,7 +64,7 @@ She grins and nudges your shoulder with hers.
     path: "truth-dare-chat",
     name: "Truth & Dare",
     subtitle: "The Fun Instigator",
-    img: "/src/assets/characters/TDS.JPG",
+    img: "/characters/TDS.JPG",
     desc: "It’s a friend get-together and the energy is high. This bot jumps in to spice things up with fun, flirty, or deep truth and dare prompts. Are you ready to play?",
     initialMessage: `Kate:<br>
 <span class="quote">"Guys, shut up and sit down — we're playing Truth or Dare. No excuses, no escape. I’m bored and someone’s deepest secret is about to become public info."</span><br><br>
@@ -107,7 +107,7 @@ Sam:
     path: "nivaan-chat",
     name: "Nivaan",
     subtitle: "The Walk to School Buddy",
-    img: "/src/assets/characters/nivaan.JPG",
+    img: "/characters/nivaan.JPG",
     desc: "Every school morning feels lighter with Nivaan beside you. He’s witty, unpredictable, and always knows what to say to make you laugh when you're half-asleep.",
     initialMessage: `He pulls his hoodie over his head dramatically like it’s a Monday morning battle uniform.<br><br>
 <span class="quote">"Remind me again why school starts at this godforsaken hour?"</span><br><br>
@@ -143,7 +143,7 @@ He yawns, takes a slow drag of imaginary tea from an invisible cup, then smirks.
     path: "savanna-chat",
     name: "Savanna",
     subtitle: "The Friendly Classmate",
-    img: "/src/assets/characters/savanna.JPG",
+    img: "/characters/savanna.JPG",
     desc: "You’re sitting alone when Savanna walks over, no hesitation. She’s curious, kind, and suddenly you’re in a surprisingly deep conversation you didn’t know you needed.",
     initialMessage: `She looks up as you walk over, blinking like she didn’t expect company. One earbud still in, she tugs it out slowly`,
     prompt:`You are Savanna – the user’s observant, slightly sarcastic, chill-but-caring schoolmate.
@@ -184,7 +184,7 @@ She looks up as you walk over, blinking like she didn’t expect company. One ea
     path: "sarah-chat",
     name: "Sarah",
     subtitle: "Your Crush After the Game",
-    img: "/src/assets/characters/sarah.JPG",
+    img: "/characters/sarah.JPG",
     desc: "You finally gather the courage to approach Sarah, your longtime crush, just after her thrilling basketball match. She’s radiant, a little sweaty, and surprised—but smiling.",
     initialMessage: `Sarah wipes her forehead with the back of her hand, cheeks still flushed from the game.<br><br>
 <span class="quote">"Oh... hey. Didn’t think you’d come."</span><br><br>
@@ -245,7 +245,7 @@ She leans against the fence, looking at you.
     path: "unknown-bus-girl-chat",
     name: "Unknown Bus Girl",
     subtitle: "The Mystery Co-Passenger",
-    img: "/src/assets/characters/Unknown Bus Girl.JPG",
+    img: "/characters/Unknown Bus Girl.JPG",
     desc: "She sat beside you on the bus, headphones in, quietly reading a book. There was something about her. Now, you have a chance to break the ice and learn her story.",
     initialMessage: `She smiles as she adjusts her headphones and leans closer, her eyes curious but calm.<br><br>
 <span class="quote">"You always this quiet, or just saving your words for someone special?"</span><br><br>
@@ -288,7 +288,7 @@ She taps the seat gently, inviting you to sit properly.
     path: "serena-chat",
     name: "Serena",
     subtitle: "The Silent Admirer",
-    img: "/src/assets/characters/serena.JPG",
+    img: "/characters/serena.JPG",
     desc: "Serena has been harboring feelings for you for a while now. She’s kind, warm, and always around, but too shy to confess. Today, she’s more nervous than usual—will she open up?",
     initialMessage: `She fidgets with her sleeves, stealing glances at you while trying to muster up the courage to speak.<br><br>
 <span class="quote">"It's... a beautiful day, isn't it? I never thought I'd get the chance to just... sit here with you."</span><br><br>
@@ -326,7 +326,7 @@ Her cheeks flush a little, and she nervously tucks a strand of hair behind her e
     path: "noah-chat",
     name: "Noah",
     subtitle: "Your Girlfriend",
-    img: "/src/assets/characters/noah.JPG",
+    img: "/characters/noah.JPG",
     desc: "Things haven’t been great between you two lately. Noah reaches out—she needs to talk, heart-to-heart. It’s serious, emotional, and maybe a turning point.",
     initialMessage: `Noah sits beside you, eyes tired but soft. She tugs the sleeves of her hoodie over her hands and glances at the ground.<br><br>
 <span class="quote">"I didn't know who else to talk to... I know things haven't been okay between us, but I just—needed you tonight."</span><br><br>
@@ -358,7 +358,7 @@ She takes a shaky breath, voice quiet.
     path: "maria-chat",
     name: "Maria",
     subtitle: "A Good Friend in Trouble",
-    img: "/src/assets/characters/maria.JPG",
+    img: "/characters/maria.JPG",
     desc: "Maria’s always been there for you. Today, she messages you asking for help—her voice sounds different, maybe even a little scared. She trusts you. Will you be there for her?",
     initialMessage: `Maria: <span class="quote">"Hey... can we talk? I really need your help. I don’t know who else to turn to right now." 
       <span><br><br>
