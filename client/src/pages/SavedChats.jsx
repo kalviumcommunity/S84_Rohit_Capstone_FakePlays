@@ -11,7 +11,8 @@ function SavedChats() {
 
   const navigate = useNavigate();
   const API_BASE =
-    (import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com").replace(/\/$/, "");
+    import.meta.env.VITE_API_BASE?.replace(/\/$/, "") ||
+    "https://s84-rohit-capstone-fakeplays.onrender.com";
   const authToken = localStorage.getItem("token");
 
   const loadSavedChats = async () => {
@@ -26,10 +27,14 @@ function SavedChats() {
       const res = await fetch(`${API_BASE}/api/saved-chats`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
+
       if (res.ok) {
         const data = await res.json();
         setChats(data?.chats || []);
+      } else if (res.status === 404) {
+        setChats([]); // No saved chats yet
       } else {
+        console.error("Failed to fetch saved chats:", res.status);
         setChats([]);
       }
     } catch (err) {
@@ -52,10 +57,13 @@ function SavedChats() {
     if (!window.confirm("Delete this saved chat? This cannot be undone.")) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/saved-chats/${encodeURIComponent(botPath)}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
+      const res = await fetch(
+        `${API_BASE}/api/saved-chats/${encodeURIComponent(botPath)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${authToken}` },
+        }
+      );
       if (res.ok) {
         setChats((prev) => prev.filter((c) => c.botPath !== botPath));
       } else {
@@ -81,7 +89,9 @@ function SavedChats() {
         {loading ? (
           <div className="login-box chat-box-wrapper">Loading...</div>
         ) : !authToken ? (
-          <div className="login-box chat-box-wrapper">Sign in is required to view saved chats.</div>
+          <div className="login-box chat-box-wrapper">
+            Sign in is required to view saved chats.
+          </div>
         ) : chats.length === 0 ? (
           <div className="login-box chat-box-wrapper">No saved chats yet.</div>
         ) : (
@@ -101,7 +111,7 @@ function SavedChats() {
                     <h3 className="character-name">{c.botName}</h3>
                     <p className="character-desc">{preview}</p>
                     <p className="character-desc">
-                      Last updated: {c.updatedAt ? new Date(c.updatedAt).toLocaleString() : "N/A"}
+                      Last updated: {new Date(c.updatedAt).toLocaleString()}
                     </p>
                     <button
                       className="delete-bot-button"

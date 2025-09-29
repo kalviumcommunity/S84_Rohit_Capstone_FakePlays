@@ -47,7 +47,8 @@ function Main() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const API_BASE =
-    import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com";
+    import.meta.env.VITE_API_BASE?.replace(/\/$/, "") ||
+    "https://s84-rohit-capstone-fakeplays.onrender.com";
   const authToken = localStorage.getItem("token");
 
   const createBotCharacter = {
@@ -75,11 +76,8 @@ function Main() {
 
       if (authToken) {
         try {
-          const res = await fetch(`${API_BASE.replace(/\/$/, "")}/api/custom-bots`, {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-              "Content-Type": "application/json",
-            },
+          const res = await fetch(`${API_BASE}/api/custom-bots`, {
+            headers: { Authorization: `Bearer ${authToken}` },
           });
 
           if (res.ok) {
@@ -91,13 +89,11 @@ function Main() {
               img: b.img,
               desc: b.desc || "",
               initialMessage: b.initialMessage,
-              prompt: "",
+              prompt: b.prompt || "",
               isCustom: true,
             }));
             setAllCharacters([...base, ...remoteBots]);
             return;
-          } else {
-            console.error("Failed to fetch bots, status:", res.status);
           }
         } catch (err) {
           console.error("Error fetching bots:", err);
@@ -115,21 +111,14 @@ function Main() {
     if (authToken) {
       try {
         const res = await fetch(
-          `${API_BASE.replace(/\/$/, "")}/api/custom-bots/${encodeURIComponent(botPathToDelete)}`,
-          {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${authToken}` },
-          }
+          `${API_BASE}/api/custom-bots/${encodeURIComponent(botPathToDelete)}`,
+          { method: "DELETE", headers: { Authorization: `Bearer ${authToken}` } }
         );
         if (res.ok) {
-          setAllCharacters((prev) =>
-            prev.filter((b) => b.path !== botPathToDelete || b.path === "create-bot")
-          );
+          setAllCharacters((prev) => prev.filter((b) => b.path !== botPathToDelete || b.path === "create-bot"));
           return;
         }
-      } catch {
-        // fallback to local
-      }
+      } catch {}
     }
 
     if (window.confirm("Are you sure you want to delete this bot?")) {
@@ -168,9 +157,7 @@ function Main() {
             <div className="card-perspective-wrapper" key={char.path}>
               <TiltableCard
                 onClick={() =>
-                  navigate(
-                    char.path === "create-bot" ? "/create-bot" : `/chat/${char.path}`
-                  )
+                  navigate(char.path === "create-bot" ? "/create-bot" : `/chat/${char.path}`)
                 }
               >
                 <img src={char.img} alt={char.name} className="character-img" />

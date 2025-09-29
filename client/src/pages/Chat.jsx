@@ -13,25 +13,24 @@ function Chat() {
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-  const [isListening, setIsListening] = useState(false);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
 
   const chatEndRef = useRef(null);
-  const recognitionRef = useRef(null);
 
-  const API_BASE = import.meta.env.VITE_API_BASE?.replace(/\/$/, "") || "https://s84-rohit-capstone-fakeplays.onrender.com";
+  const API_BASE =
+    import.meta.env.VITE_API_BASE?.replace(/\/$/, "") ||
+    "https://s84-rohit-capstone-fakeplays.onrender.com";
   const authToken = localStorage.getItem("token");
 
-  // Load bot (predefined -> backend -> local fallback)
+  // Load bot (predefined → backend → local fallback)
   useEffect(() => {
     const resolveBot = async () => {
+      // 1️⃣ Check predefined bots
       const pre = predefinedBots.find((b) => b.path === botPath);
-      if (pre) {
-        setBot(pre);
-        return pre;
-      }
+      if (pre) return pre;
 
+      // 2️⃣ Check backend
       if (authToken) {
         try {
           const res = await fetch(`${API_BASE}/api/custom-bots/${encodeURIComponent(botPath)}`, {
@@ -40,7 +39,7 @@ function Chat() {
           if (res.ok) {
             const data = await res.json();
             if (data?.bot) {
-              const b = {
+              return {
                 path: data.bot.path,
                 name: data.bot.name,
                 subtitle: data.bot.subtitle || "Custom Bot",
@@ -50,37 +49,35 @@ function Chat() {
                 prompt: data.bot.prompt || "",
                 isCustom: true,
               };
-              setBot(b);
-              return b;
             }
           }
-        } catch {
-          // fallback to local
-        }
+        } catch {}
       }
 
+      // 3️⃣ Check local storage
       const localBots = JSON.parse(localStorage.getItem("customBots") || "[]");
       const local = localBots.find((b) => b.path === botPath);
-      if (local) {
-        setBot(local);
-        return local;
-      }
+      if (local) return local;
 
+      // Bot not found → redirect
+      navigate("/main");
       return null;
     };
 
-    const init = async () => {
+    const loadSavedChat = async () => {
       const currentBot = await resolveBot();
-      if (!currentBot) {
-        navigate("/main");
-        return;
-      }
+      if (!currentBot) return;
 
+      setBot(currentBot);
+
+      // Try fetch saved chat from backend
       if (authToken) {
         try {
-          const res = await fetch(`${API_BASE}/api/saved-chats/${encodeURIComponent(currentBot.path)}`, {
-            headers: { Authorization: `Bearer ${authToken}` },
-          });
+          const res = await fetch(
+            `${API_BASE}/api/saved-chats/${encodeURIComponent(currentBot.path)}`,
+            { headers: { Authorization: `Bearer ${authToken}` } }
+          );
+
           if (res.ok) {
             const data = await res.json();
             const saved = data?.chat?.messages;
@@ -89,23 +86,26 @@ function Chat() {
               return;
             }
           }
-        } catch {
-          // fallback to initial message
-        }
+        } catch {}
       }
 
-      setChat([{ sender: "bot", text: currentBot.initialMessage || `You are now chatting with ${currentBot.name}.` }]);
+      // Fallback: show initial message
+      setChat([
+        {
+          sender: "bot",
+          text: currentBot.initialMessage || `You are now chatting with ${currentBot.name}.`,
+        },
+      ]);
     };
 
-    init();
+    loadSavedChat();
   }, [botPath, navigate, authToken, API_BASE]);
 
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
+  // Save chat to backend
   const saveChat = async (currentChat) => {
     if (!authToken || !bot) return;
     try {
@@ -121,22 +121,21 @@ function Chat() {
           messages: currentChat.map((m) => ({ sender: m.sender, text: m.text })),
         }),
       });
-    } catch {
-      // best-effort save
-    }
+    } catch {}
   };
 
   const handleSend = async () => {
     if (!userInput.trim() || isLoading) return;
 
-    const updatedChat = editIndex !== null
-      ? (() => {
-          const copy = [...chat];
-          copy[editIndex].text = userInput;
-          if (copy[editIndex + 1]?.sender === "bot") copy.splice(editIndex + 1, 1);
-          return copy;
-        })()
-      : [...chat, { sender: "user", text: userInput }];
+    const updatedChat =
+      editIndex !== null
+        ? (() => {
+            const copy = [...chat];
+            copy[editIndex].text = userInput;
+            if (copy[editIndex + 1]?.sender === "bot") copy.splice(editIndex + 1, 1);
+            return copy;
+          })()
+        : [...chat, { sender: "user", text: userInput }];
 
     setChat(updatedChat);
     setUserInput("");
@@ -148,14 +147,15 @@ function Chat() {
     setIsLoading(true);
 
     try {
-      const contextHistory = updatedChat.slice(-6)
-        .map(m => `${m.sender === "user" ? "You" : bot.name}: ${m.text.replace(/<[^>]+>/g, "")}`)
+      const contextHistory = updatedChat
+        .slice(-6)
+        .map((m) => `${m.sender === "user" ? "You" : bot.name}: ${m.text.replace(/<[^>]+>/g, "")}`)
         .join("\n");
 
       const prompt = `${bot.prompt || ""}\n\n${contextHistory}\n${bot.name}:`;
 
-      // Replace with your real bot API call
-      const res = await fetch(`/api/fake-bot-response`, { // placeholder for Gemini API call
+      // Full backend API call
+      const res = await fetch(`${API_BASE}/api/fake-bot-response`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
@@ -212,7 +212,9 @@ function Chat() {
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               disabled={isLoading}
             />
-            <button onClick={handleSend} disabled={isLoading}>{editIndex !== null ? "Update" : "Send"}</button>
+            <button onClick={handleSend} disabled={isLoading}>
+              {editIndex !== null ? "Update" : "Send"}
+            </button>
           </div>
         </div>
       </div>
