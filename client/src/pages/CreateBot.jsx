@@ -1,4 +1,3 @@
-// src/pages/CreateBot.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -12,7 +11,7 @@ function CreateBot() {
   const [botImagePreview, setBotImagePreview] = useState(null);
 
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com/";
+  const API_BASE = import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com";
   const authToken = localStorage.getItem("token");
 
   const handleImageUpload = (e) => {
@@ -44,8 +43,7 @@ function CreateBot() {
         name: botName,
         subtitle: "Custom Bot",
         img: imageDataUrl,
-        desc:
-          situation.length > 150 ? situation.substring(0, 150) + "..." : situation,
+        desc: situation.length > 150 ? situation.substring(0, 150) + "..." : situation,
         initialMessage: initialMessage.replace(/\n/g, "<br>"),
         prompt: situation,
         isCustom: true
@@ -61,25 +59,21 @@ function CreateBot() {
             },
             body: JSON.stringify(newBot)
           });
+
           if (!res.ok) {
-            if (res.status === 409) {
-              const msg = await res.json().catch(() => ({}));
-              alert(msg?.error || "Bot path already exists. Try renaming the bot.");
-            } else if (res.status === 413) {
-              alert("Image is too large. Please upload a smaller image.");
-            } else {
-              const msg = await res.json().catch(() => ({}));
-              alert(msg?.error || "Failed to save bot to server.");
-            }
+            const msg = await res.json().catch(() => ({}));
+            alert(msg?.error || "Failed to save bot to server.");
             return;
           }
+
           navigate("/main");
           return;
-        } catch {
-          // fall through to local fallback
+        } catch (err) {
+          console.error("Server error:", err);
         }
       }
 
+      // Fallback: Save locally if not logged in
       const existingBots = JSON.parse(localStorage.getItem("customBots") || "[]");
       existingBots.push(newBot);
       localStorage.setItem("customBots", JSON.stringify(existingBots));

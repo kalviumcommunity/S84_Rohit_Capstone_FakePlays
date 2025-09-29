@@ -1,4 +1,3 @@
-// server/routes/customBotRoutes.js
 const express = require("express");
 const router = express.Router();
 const CustomBot = require("../models/CustomBot");
@@ -16,6 +15,10 @@ router.post("/upsert", async (req, res) => {
       prompt,
       isCustom = true
     } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     if (!path || !name || !img || !initialMessage || !prompt) {
       return res.status(400).json({
@@ -41,9 +44,12 @@ router.post("/upsert", async (req, res) => {
 // List all custom bots for the user
 router.get("/", async (req, res) => {
   try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+
     const bots = await CustomBot.find({ user: req.user.id })
       .select("path name subtitle img desc isCustom updatedAt")
       .sort({ updatedAt: -1 });
+
     res.json({ success: true, bots });
   } catch (_err) {
     res.status(500).json({ error: "Server error" });
@@ -53,6 +59,8 @@ router.get("/", async (req, res) => {
 // Get a single custom bot by path
 router.get("/:path", async (req, res) => {
   try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+
     const bot = await CustomBot.findOne({
       user: req.user.id,
       path: req.params.path
@@ -67,6 +75,8 @@ router.get("/:path", async (req, res) => {
 // Delete a custom bot by path
 router.delete("/:path", async (req, res) => {
   try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+
     const deleted = await CustomBot.findOneAndDelete({
       user: req.user.id,
       path: req.params.path

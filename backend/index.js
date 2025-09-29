@@ -9,31 +9,30 @@ require("./passportSetup");
 const chatRoutes = require("./routes/chat");
 const authRoutes = require("./routes/authRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
-const Message = require("./models/Message");
-
 const savedChatRoutes = require("./routes/savedChatRoutes");
 const customBotRoutes = require("./routes/customBotRoutes");
+const Message = require("./models/Message");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ----------- CORS Setup -----------
 const allowedOrigins = [
-  "http://localhost:5173",       // Local Vite frontend
-  "https://fake-plays.netlify.app" // Deployed Netlify frontend
+  "http://localhost:5173",
+  "https://fake-plays.netlify.app"
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman or mobile apps)
-      if (!origin) return callback(null, true);
-      if (!allowedOrigins.includes(origin)) {
-        return callback(new Error("CORS policy does not allow access from this origin."), false);
+      if (!origin) return callback(null, true); // Allow Postman, mobile apps
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = "CORS policy does not allow access from this origin.";
+        return callback(new Error(msg), false);
       }
       return callback(null, true);
     },
-    credentials: true, // Allow cookies / auth headers
+    credentials: true, // allow cookies/auth headers
   })
 );
 
@@ -43,7 +42,10 @@ app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use(passport.initialize());
 
 // ----------- Routes -----------
+// Authentication routes
 app.use("/api/auth", authRoutes);
+
+// Chat routes
 app.use("/api/chat", chatRoutes);
 
 // Protected routes
@@ -51,6 +53,7 @@ app.use("/api/saved-chats", authMiddleware, savedChatRoutes);
 app.use("/api/custom-bots", authMiddleware, customBotRoutes);
 
 // ----------- Message CRUD -----------
+// Create a new message
 app.post("/api/message", authMiddleware, async (req, res) => {
   try {
     const { message } = req.body;
@@ -65,6 +68,7 @@ app.post("/api/message", authMiddleware, async (req, res) => {
   }
 });
 
+// Get all messages for the user
 app.get("/api/message", authMiddleware, async (req, res) => {
   try {
     const messages = await Message.find({ user: req.user.id });
@@ -74,6 +78,7 @@ app.get("/api/message", authMiddleware, async (req, res) => {
   }
 });
 
+// Update a message
 app.put("/api/message/:id", authMiddleware, async (req, res) => {
   try {
     const { message } = req.body;
@@ -91,6 +96,7 @@ app.put("/api/message/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// Delete a message
 app.delete("/api/message/:id", authMiddleware, async (req, res) => {
   try {
     const deletedMessage = await Message.findOneAndDelete({
