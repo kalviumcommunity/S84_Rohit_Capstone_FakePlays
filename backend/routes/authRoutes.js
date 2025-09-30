@@ -2,13 +2,19 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
+const cookieParser = require("cookie-parser");
 const User = require("../models/User");
-require("dotenv").config();
 
 const router = express.Router();
 
-// Helper: determine if in production
-const isProduction = process.env.NODE_ENV === "production";
+// ----------------- Middleware -----------------
+router.use(cookieParser());
+const JWT_SECRET = process.env.JWT_SECRET || "default_secret_key";
+
+// ----------------- Helper: generate token -----------------
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "1h" });
+};
 
 // ----------------- Register -----------------
 router.post("/register", async (req, res) => {
@@ -17,8 +23,7 @@ router.post("/register", async (req, res) => {
     return res.status(400).json({ error: "All fields are required" });
 
   const existingUser = await User.findOne({ username });
-  if (existingUser)
-    return res.status(400).json({ error: "User already exists" });
+  if (existingUser) return res.status(400).json({ error: "User already exists" });
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = new User({ username, email, password: hashedPassword });
@@ -36,16 +41,20 @@ router.post("/login", async (req, res) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  const token = generateToken(user._id);
 
   res
     .cookie("token", token, {
       httpOnly: true,
-      secure: isProduction, // secure only in production
       sameSite: "strict",
       maxAge: 60 * 60 * 1000, // 1 hour
     })
     .json({ message: "Login successful" });
+});
+
+// ----------------- Logout -----------------
+router.post("/logout", (req, res) => {
+  res.clearCookie("token").json({ message: "Logged out successfully" });
 });
 
 // ----------------- Google OAuth -----------------
@@ -58,21 +67,39 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { session: false, failureRedirect: "/login" }),
   (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = generateToken(req.user._id);
 
-    const redirectURL = isProduction
-      ? "https://fake-plays.netlify.app/main"
-      : "http://localhost:5173/main"; // Update port if using Vite
+    // Dynamically detect redirect URL
+    const host = req.headers.host; // e.g., localhost:5173 or fakeplays.netlify.app
+    let redirectURL = "";
+
+    if (host.includes("localhost")) {
+      redirectURL = "http://localhost:5173/main"; // your local frontend
+    } else {
+      redirectURL = "https://fake-plays.netlify.app/main"; // deployed frontend
+    }
 
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: isProduction,
         sameSite: "strict",
         maxAge: 60 * 60 * 1000,
       })
       .redirect(redirectURL);
   }
 );
+
+// ----------------- Verify Token -----------------
+router.get("/verify", (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: "Not authenticated" });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.json({ id: decoded.id });
+  } catch (err) {
+    res.status(401).json({ error: "Invalid token" });
+  }
+});
 
 module.exports = router;
