@@ -15,6 +15,7 @@ function Signup() {
 
   const navigate = useNavigate();
 
+  // ----------------- Navbar visibility -----------------
   useEffect(() => {
     const timeout = setTimeout(() => setIsNavbarVisible(false), 5000);
     const handleMouseMove = (e) => {
@@ -28,23 +29,36 @@ function Signup() {
     };
   }, [isHovering]);
 
+  // ----------------- Handle Google OAuth Token -----------------
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      window.history.replaceState({}, document.title, "/main"); // Remove token from URL
+      navigate("/main");
+    }
+  }, []);
+
+  // ----------------- Handle Username/Password Signup -----------------
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      });
+      const res = await fetch(
+        "https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password }),
+        }
+      );
 
       const data = await res.json();
       if (res.ok) {
         setShowSuccess(true);
-        setTimeout(() => {
-          navigate("/login");
-        }, 1500);
+        setTimeout(() => navigate("/login"), 1500);
       } else {
         alert(data.error || "Signup failed");
         setLoading(false);
@@ -60,7 +74,11 @@ function Signup() {
     <div className="success-check-container">
       <svg className="checkmark" viewBox="0 0 52 52">
         <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
-        <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        <path
+          className="checkmark__check"
+          fill="none"
+          d="M14.1 27.2l7.1 7.2 16.7-16.8"
+        />
       </svg>
       <div className="success-glow"></div>
     </div>
@@ -126,10 +144,17 @@ function Signup() {
             </button>
           </form>
 
+          {/* Google OAuth */}
           <div className="google-login-wrapper">
             <p className="or-text">or</p>
-            <a href="https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/google" className="google-button">
-              <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google icon" />
+            <a
+              href="https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/google"
+              className="google-button"
+            >
+              <img
+                src="https://img.icons8.com/color/16/000000/google-logo.png"
+                alt="Google icon"
+              />
               Sign up with Google
             </a>
           </div>

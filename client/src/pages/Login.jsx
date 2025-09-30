@@ -15,30 +15,43 @@ function Login() {
 
   const navigate = useNavigate();
 
+  // ----------------- Backend URL based on environment -----------------
+ // ----------------- Backend URL -----------------
+const BACKEND_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000" // Your local backend
+    : "https://s84-rohit-capstone-fakeplays.onrender.com"; // Production backend
+
+
+  // ----------------- Navbar logic -----------------
   useEffect(() => {
     const timeoutId = setTimeout(() => setIsNavbarVisible(false), 5000);
-
     const handleMouseMove = (e) => {
-      if (!isHovering) {
-        setIsNavbarVisible(e.clientY < 30);
-      }
+      if (!isHovering) setIsNavbarVisible(e.clientY < 30);
     };
-
     document.addEventListener("mousemove", handleMouseMove);
-
     return () => {
       clearTimeout(timeoutId);
       document.removeEventListener("mousemove", handleMouseMove);
     };
   }, [isHovering]);
 
+  // ----------------- Check if user is already logged in -----------------
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/main");
+    }
+  }, []);
+
+  // ----------------- Handle login -----------------
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMessage(""); // Reset previous error
+    setErrorMessage("");
 
     try {
-      const response = await fetch("https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/login", {
+      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -47,11 +60,11 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token); // Save JWT
         setShowSuccess(true);
-        setTimeout(() => navigate("/Main"), 1500);
+        setTimeout(() => navigate("/main"), 1500);
       } else {
-        triggerErrorAnimation("Invalid username or password");
+        triggerErrorAnimation(data.error || "Invalid username or password");
         setLoading(false);
       }
     } catch (error) {
@@ -64,9 +77,7 @@ function Login() {
   const triggerErrorAnimation = (message) => {
     setErrorAnimation(true);
     setErrorMessage(message);
-    setTimeout(() => {
-      setErrorAnimation(false);
-    }, 800); // Matches CSS animation
+    setTimeout(() => setErrorAnimation(false), 800);
   };
 
   const SuccessCheck = () => (
@@ -81,7 +92,7 @@ function Login() {
 
   return (
     <>
-      {/* Background animated circles */}
+      {/* Background */}
       <div className="background">
         <div className="circle circle1"></div>
         <div className="circle circle2"></div>
@@ -91,13 +102,12 @@ function Login() {
       {/* Navbar */}
       <Navbar isNavbarVisible={isNavbarVisible} setIsHovering={setIsHovering} />
 
-      {/* Login Container */}
+      {/* Login Box */}
       <div className="container login-container">
         <div className="login-box">
           <h2 className="heading">Welcome Back</h2>
           <p className="subtext">Login to continue your AI chat experience</p>
 
-          {/* Login Form */}
           <form className="login-form" onSubmit={handleLogin}>
             <input
               type="text"
@@ -134,26 +144,18 @@ function Login() {
               )}
             </button>
 
-            {/* Show Error Message if any */}
-            {errorMessage && (
-              <p className="error-message">{errorMessage}</p>
-            )}
-            
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
           </form>
 
           {/* Google OAuth */}
           <div className="google-login-wrapper">
             <p className="or-text">or</p>
-            <a href="https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/google" className="google-button">
-              <img
-                src="https://img.icons8.com/color/16/000000/google-logo.png"
-                alt="Google icon"
-              />
-              Sign up with Google
+            <a href={`${BACKEND_URL}/api/auth/google`} className="google-button">
+              <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google icon" />
+              Sign in with Google
             </a>
           </div>
 
-          {/* Disclaimer */}
           <p className="disclaimer">Your login is encrypted and secure.</p>
         </div>
       </div>
