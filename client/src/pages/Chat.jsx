@@ -216,15 +216,17 @@ function Chat() {
     messages: currentChat.map((m) => ({ sender: m.sender, text: m.text }))
   };
   try {
-    await fetch(`${API_BASE}/api/saved-chats/upsert`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authToken
-      },
-      body: JSON.stringify(payload)
+   await fetch(`${API_BASE}/api/saved-chats/upsert`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: authToken
+  },
+  body: JSON.stringify(payload)
     });
-  } catch {}
+  } catch {
+    // silently ignore errors
+  }
 };
 
 
