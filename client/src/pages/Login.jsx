@@ -144,10 +144,7 @@ function Login() {
           {/* Google OAuth */}
           <div className="google-login-wrapper">
             <p className="or-text">or</p>
-            <a
-              href="https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/google"
-              className="google-button"
-            >
+            <a href="https://s84-rohit-capstone-fakeplays.onrender.com/api/auth/google" className="google-button">
               <img
                 src="https://img.icons8.com/color/16/000000/google-logo.png"
                 alt="Google icon"

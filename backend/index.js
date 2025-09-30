@@ -19,8 +19,9 @@ const PORT = process.env.PORT || 5000;
 // ----------- CORS Setup -----------
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://fake-plays.netlify.app",
+  "https://fakeplays.netlify.app"
 ];
+
 app.use(
   cors({
     origin: function (origin, callback) {

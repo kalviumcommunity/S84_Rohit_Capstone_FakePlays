@@ -52,14 +52,10 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { session: false, failureRedirect: "/" }),
   (req, res) => {
-    // Generate JWT token
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
-    // Redirect to your Netlify frontend with token in query params
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
     res.redirect(`https://fakeplays.netlify.app?token=${token}`);
   }
 );
+
 
 module.exports = router;
