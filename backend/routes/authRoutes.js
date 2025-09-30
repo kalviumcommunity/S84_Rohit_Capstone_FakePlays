@@ -55,8 +55,8 @@
         expiresIn: "1h"
       });
      
-      console.log(`Redirecting to: http://localhost:5173/main?token=${token}`);
-      res.redirect(`http://localhost:5173/main?token=${token}`);
+      console.log(`Redirecting to: https://s84-rohit-capstone-fakeplays.onrender.com/main?token=${token}`);
+      res.redirect(`https://s84-rohit-capstone-fakeplays.onrender.com/main?token=${token}`);
     }
   );
   module.exports = router;
