@@ -12,16 +12,12 @@ function Login() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorAnimation, setErrorAnimation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
   const navigate = useNavigate();
 
-  // ----------------- Backend URL based on environment -----------------
- // ----------------- Backend URL -----------------
-const BACKEND_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000" // Your local backend
-    : "https://s84-rohit-capstone-fakeplays.onrender.com"; // Production backend
-
+  const BACKEND_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://s84-rohit-capstone-fakeplays.onrender.com";
 
   // ----------------- Navbar logic -----------------
   useEffect(() => {
@@ -36,31 +32,38 @@ const BACKEND_URL =
     };
   }, [isHovering]);
 
-  // ----------------- Check if user is already logged in -----------------
+  // ----------------- Handle Google OAuth Token & Check for existing login -----------------
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    // Check for existing token in localStorage first
+    const existingToken = localStorage.getItem("token");
+    if (existingToken) {
       navigate("/main");
+      return; // Early exit
     }
-  }, []);
+
+    // Check for token from Google redirect in URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      navigate("/main", { replace: true });
+    }
+  }, [navigate]);
 
   // ----------------- Handle login -----------------
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
-
     try {
       const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-
       const data = await response.json();
-
       if (response.ok) {
-        localStorage.setItem("token", data.token); // Save JWT
+        localStorage.setItem("token", data.token);
         setShowSuccess(true);
         setTimeout(() => navigate("/main"), 1500);
       } else {
@@ -92,62 +95,24 @@ const BACKEND_URL =
 
   return (
     <>
-      {/* Background */}
       <div className="background">
         <div className="circle circle1"></div>
         <div className="circle circle2"></div>
         <div className="circle circle3"></div>
       </div>
-
-      {/* Navbar */}
       <Navbar isNavbarVisible={isNavbarVisible} setIsHovering={setIsHovering} />
-
-      {/* Login Box */}
       <div className="container login-container">
         <div className="login-box">
           <h2 className="heading">Welcome Back</h2>
           <p className="subtext">Login to continue your AI chat experience</p>
-
           <form className="login-form" onSubmit={handleLogin}>
-            <input
-              type="text"
-              placeholder="Username"
-              className="input-field"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="input-field"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-            <button
-              type="submit"
-              className={`cta-button ${showSuccess ? "success" : ""} ${errorAnimation ? "error" : ""}`}
-              disabled={loading || showSuccess}
-            >
-              {showSuccess ? (
-                <SuccessCheck />
-              ) : loading ? (
-                <div className="dot-loader">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              ) : (
-                "Login"
-              )}
+            <input type="text" placeholder="Username" className="input-field" value={username} onChange={(e) => setUsername(e.target.value)} required />
+            <input type="password" placeholder="Password" className="input-field" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <button type="submit" className={`cta-button ${showSuccess ? "success" : ""} ${errorAnimation ? "error" : ""}`} disabled={loading || showSuccess}>
+              {showSuccess ? <SuccessCheck /> : loading ? <div className="dot-loader"><span></span><span></span><span></span></div> : "Login"}
             </button>
-
             {errorMessage && <p className="error-message">{errorMessage}</p>}
           </form>
-
-          {/* Google OAuth */}
           <div className="google-login-wrapper">
             <p className="or-text">or</p>
             <a href={`${BACKEND_URL}/api/auth/google`} className="google-button">
@@ -155,7 +120,6 @@ const BACKEND_URL =
               Sign in with Google
             </a>
           </div>
-
           <p className="disclaimer">Your login is encrypted and secure.</p>
         </div>
       </div>

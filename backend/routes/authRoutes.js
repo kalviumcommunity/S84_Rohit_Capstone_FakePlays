@@ -1,105 +1,98 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const passport = require("passport");
-const cookieParser = require("cookie-parser");
-const User = require("../models/User");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const User = require("../models/User"); // Adjust path based on your project structure
 
 const router = express.Router();
 
-// ----------------- Middleware -----------------
-router.use(cookieParser());
-const JWT_SECRET = process.env.JWT_SECRET || "default_secret_key";
+// ----------- Local Authentication -----------
 
-// ----------------- Helper: generate token -----------------
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "1h" });
-};
-
-// ----------------- Register -----------------
+// @route   POST /api/auth/register
+// @desc    Register a new user
 router.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
-  if (!username || !email || !password)
-    return res.status(400).json({ error: "All fields are required" });
+  try {
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ error: "User with this email already exists" });
+    }
+    user = await User.findOne({ username });
+    if (user) {
+      return res.status(400).json({ error: "Username is already taken" });
+    }
 
-  const existingUser = await User.findOne({ username });
-  if (existingUser) return res.status(400).json({ error: "User already exists" });
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ username, email, password: hashedPassword });
-  await newUser.save();
-
-  res.status(201).json({ message: "User registered successfully" });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    user = new User({ username, email, password: hashedPassword });
+    await user.save();
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Server error during registration" });
+  }
 });
 
-// ----------------- Login -----------------
+// @route   POST /api/auth/login
+// @desc    Login user and return JWT
 router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username });
-  if (!user) return res.status(400).json({ error: "Invalid credentials" });
+    const { username, password } = req.body;
+    try {
+        const user = await User.findOne({ username });
+        if (!user || !user.password) { // Check for password existence for OAuth users
+            return res.status(400).json({ error: "Invalid credentials or use social login" });
+        }
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: "Invalid credentials" });
+        }
 
-  const token = generateToken(user._id);
+        const payload = { id: user.id };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" });
 
-  res
-    .cookie("token", token, {
-      httpOnly: true,
-      sameSite: "strict",
-      maxAge: 60 * 60 * 1000, // 1 hour
-    })
-    .json({ message: "Login successful" });
+        res.json({ token });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: "Server error during login" });
+    }
 });
 
-// ----------------- Logout -----------------
-router.post("/logout", (req, res) => {
-  res.clearCookie("token").json({ message: "Logged out successfully" });
-});
 
-// ----------------- Google OAuth -----------------
+// ----------- Google OAuth2 -----------
+
+// @route   GET /api/auth/google
+// @desc    Initiate Google OAuth flow
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+// @route   GET /api/auth/google/callback
+// @desc    Google OAuth callback URL
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false, failureRedirect: "/login" }),
+  passport.authenticate("google", {
+    // We use JWTs, so session support is not needed.
+    session: false,
+    // Redirect to frontend login page on failure
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`,
+  }),
   (req, res) => {
-    const token = generateToken(req.user._id);
-
-    // Dynamically detect redirect URL
-    const host = req.headers.host; // e.g., localhost:5173 or fakeplays.netlify.app
-    let redirectURL = "";
-
-    if (host.includes("localhost")) {
-      redirectURL = "http://localhost:5173/main"; // your local frontend
-    } else {
-      redirectURL = "https://fake-plays.netlify.app/main"; // deployed frontend
+    // Passport attaches the authenticated user to `req.user`
+    if (!req.user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication-failed`);
     }
 
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60 * 60 * 1000,
-      })
-      .redirect(redirectURL);
+    // Create a JWT for the authenticated user
+    const payload = { id: req.user._id };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    // Redirect the user back to the frontend with the token in the query params
+    res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
   }
 );
-
-// ----------------- Verify Token -----------------
-router.get("/verify", (req, res) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json({ error: "Not authenticated" });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    res.json({ id: decoded.id });
-  } catch (err) {
-    res.status(401).json({ error: "Invalid token" });
-  }
-});
 
 module.exports = router;
