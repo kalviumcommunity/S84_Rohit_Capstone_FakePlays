@@ -11,7 +11,7 @@ function CreateBot() {
   const [botImagePreview, setBotImagePreview] = useState(null);
 
   const navigate = useNavigate();
-  const API_BASE =  "https://s84-rohit-capstone-fakeplays.onrender.com";
+  const API_BASE = (import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com").replace(/\/$/, "");
   const authToken = localStorage.getItem("token");
 
   const handleImageUpload = (e) => {

@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import { botsData as predefinedBots } from "../botsData";
 import "../styles/style.css";
 
-
 function Chat() {
   const { botPath } = useParams();
   const navigate = useNavigate();
@@ -26,8 +25,8 @@ function Chat() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const initialBotSkippedRef = useRef(false);
 
-  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
- const API_BASE = (import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com").replace(/\/$/, "");
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
+  const API_BASE = (import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com").replace(/\/$/, "");
   const authToken = localStorage.getItem("token");
 
   // Load bot (predefined -> backend -> local fallback) and then attempt to restore saved chat
@@ -45,7 +44,7 @@ function Chat() {
       try {
         // Ensure single slash and proper URL encoding
   const res = await fetch(`${API_BASE}/api/custom-bots/${encodeURIComponent(botPath)}`, {
-  headers: { Authorization: authToken }
+  headers: { Authorization: `Bearer ${authToken}` }
         });
         if (res.ok) {
           const data = await res.json();
@@ -93,7 +92,7 @@ function Chat() {
     if (authToken) {
       try {
     const res = await fetch(`${API_BASE}/api/saved-chats/${encodeURIComponent(currentBot.path)}`, {
-  headers: { Authorization: authToken }
+  headers: { Authorization: `Bearer ${authToken}` }
         });
         if (res.ok) {
           const data = await res.json();
@@ -117,7 +116,6 @@ function Chat() {
 
   init();
 }, [botPath, navigate]);
-
 
   useEffect(() => {
     if (chat.length > 1) {
@@ -208,7 +206,7 @@ function Chat() {
 
   // ====== END TTS additions ======
 
- const saveChat = async (currentChat) => {
+const saveChat = async (currentChat) => {
   if (!authToken || !bot) return;
   const payload = {
     botPath: bot.path,
@@ -220,7 +218,7 @@ function Chat() {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    Authorization: authToken
+    Authorization: `Bearer ${authToken}`
   },
   body: JSON.stringify(payload)
     });
@@ -228,7 +226,6 @@ function Chat() {
     // silently ignore errors
   }
 };
-
 
   const generateBotReply = async (currentChat) => {
   if (!bot) return;
@@ -273,7 +270,6 @@ function Chat() {
     setIsLoading(false);
   }
 };
-
 
   const handleSend = async () => {
     if (!userInput.trim() || isLoading) return;

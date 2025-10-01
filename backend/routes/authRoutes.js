@@ -49,7 +49,7 @@ router.post("/login", async (req, res) => {
       sameSite: "strict",
       maxAge: 60 * 60 * 1000, // 1 hour
     })
-    .json({ message: "Login successful" });
+    .json({ message: "Login successful", token });
 });
 
 // ----------------- Logout -----------------
@@ -79,13 +79,7 @@ router.get(
       redirectURL = "https://fake-plays.netlify.app/main"; // deployed frontend
     }
 
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60 * 60 * 1000,
-      })
-      .redirect(redirectURL);
+    res.redirect(`${redirectURL}?token=${token}`);
   }
 );
 

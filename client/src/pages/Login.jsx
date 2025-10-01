@@ -47,12 +47,13 @@ function Login() {
         body: JSON.stringify({ username, password }),
       });
       
+      const data = await response.json();
+      
       if (response.ok) {
-        // The cookie is set automatically by the browser. No need to handle tokens here.
+        localStorage.setItem("token", data.token);
         setShowSuccess(true);
         setTimeout(() => navigate("/main"), 1500);
       } else {
-        const data = await response.json();
         triggerErrorAnimation(data.error || "Invalid username or password");
         setLoading(false);
       }
@@ -152,4 +153,4 @@ function Login() {
   );
 }
 
-export default Login; 
+export default Login;
