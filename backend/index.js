@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const passport = require("passport");
+const cookieParser = require("cookie-parser"); // Import cookie-parser
 require("./passportSetup");
 
 const chatRoutes = require("./routes/chat");
@@ -38,6 +39,7 @@ app.use(
 // ----------- Middleware -----------
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+app.use(cookieParser()); // <--- ADD THIS LINE GLOBALLY
 app.use(passport.initialize());
 
 // ----------- Routes -----------
