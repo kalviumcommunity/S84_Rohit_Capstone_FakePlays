@@ -87,13 +87,13 @@ function SavedChats() {
         <h2 style={{ color: "white", marginBottom: "12px" }}>Saved Chats</h2>
 
         {loading ? (
-          <div className="login-box chat-box-wrapper">Loading...</div>
+          <div className="loginbox chat-box-wrapper"></div>
         ) : !authToken ? (
           <div className="login-box chat-box-wrapper">
             Sign in is required to view saved chats.
           </div>
         ) : chats.length === 0 ? (
-          <div className="login-box chat-box-wrapper">No saved chats yet.</div>
+          <div className="login box chat-box-wrapper"></div>
         ) : (
           <div className="boxes-container">
             {chats.map((c) => {

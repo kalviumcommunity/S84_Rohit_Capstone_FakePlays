@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ReactGA from 'react-ga4';
 import Navbar from "../components/Navbar";
 import "../styles/style.css";
 
@@ -51,6 +52,11 @@ function Signup() {
 
       const data = await res.json();
       if (res.ok) {
+        ReactGA.event({
+          category: 'User',
+          action: 'sign_up',
+          label: 'Method: Email',
+        });
         setShowSuccess(true);
         setTimeout(() => navigate("/login"), 1500);
       } else {

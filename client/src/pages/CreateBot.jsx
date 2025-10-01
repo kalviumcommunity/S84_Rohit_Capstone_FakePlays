@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ReactGA from 'react-ga4';
 import Navbar from "../components/Navbar";
 import "../styles/style.css";
 
@@ -66,6 +67,10 @@ function CreateBot() {
             return;
           }
 
+          ReactGA.event({
+            category: 'Bot',
+            action: 'create_bot',
+          });
           navigate("/main");
           return;
         } catch (err) {
@@ -77,6 +82,10 @@ function CreateBot() {
       const existingBots = JSON.parse(localStorage.getItem("customBots") || "[]");
       existingBots.push(newBot);
       localStorage.setItem("customBots", JSON.stringify(existingBots));
+      ReactGA.event({
+        category: 'Bot',
+        action: 'create_bot',
+      });
       navigate("/main");
     };
 

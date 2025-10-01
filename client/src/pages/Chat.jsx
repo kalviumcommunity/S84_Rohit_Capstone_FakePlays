@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import ReactGA from 'react-ga4';
 import Navbar from "../components/Navbar";
 import { botsData as predefinedBots } from "../botsData";
 import "../styles/style.css";
@@ -87,6 +88,14 @@ function Chat() {
       navigate("/main");
       return;
     }
+
+    // Track chat start
+    ReactGA.event({
+      category: 'Bot',
+      action: 'chat_start',
+      label: currentBot.name,
+      value: 1,
+    });
 
     // Load saved chat if authenticated
     if (authToken) {

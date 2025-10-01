@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
+const axios = require('axios');
 const User = require("../models/User");
 
 const router = express.Router();
@@ -10,10 +11,30 @@ const router = express.Router();
 // ----------------- Middleware -----------------
 router.use(cookieParser());
 const JWT_SECRET = process.env.JWT_SECRET || "default_secret_key";
+const GA_MEASUREMENT_ID = 'G-74C02FEQVM';
+const GA_API_SECRET = 'YOUR_API_SECRET'; // Replace with your actual API Secret from GA4
 
 // ----------------- Helper: generate token -----------------
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "1h" });
+};
+
+// Function to send GA event from server
+const sendGAEvent = async (eventName, params = {}) => {
+  try {
+    await axios.post(
+      `https://www.google-analytics.com/mp/collect?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`,
+      {
+        client_id: 'server-client', // Use a fixed or dynamic client ID
+        events: [{
+          name: eventName,
+          params,
+        }],
+      }
+    );
+  } catch (err) {
+    console.error('GA tracking error:', err);
+  }
 };
 
 // ----------------- Register -----------------
@@ -29,6 +50,9 @@ router.post("/register", async (req, res) => {
   const newUser = new User({ username, email, password: hashedPassword });
   await newUser.save();
 
+  // Track signup event
+  sendGAEvent('sign_up', { method: 'email' });
+
   res.status(201).json({ message: "User registered successfully" });
 });
 
@@ -42,6 +66,9 @@ router.post("/login", async (req, res) => {
   if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
   const token = generateToken(user._id);
+
+  // Track login event
+  sendGAEvent('login', { method: 'email' });
 
   res
     .cookie("token", token, {
@@ -68,6 +95,9 @@ router.get(
   passport.authenticate("google", { session: false, failureRedirect: "/login" }),
   (req, res) => {
     const token = generateToken(req.user._id);
+
+    // Track login event for Google
+    sendGAEvent('login', { method: 'google' });
 
     // Dynamically detect redirect URL
     const host = req.headers.host; // e.g., localhost:5173 or fakeplays.netlify.app

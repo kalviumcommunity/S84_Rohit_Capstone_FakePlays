@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import ReactGA from 'react-ga4';
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -9,6 +10,9 @@ import CreateBot from "./pages/CreateBot";
 import SavedChats from "./pages/SavedChats";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+
+// Initialize GA4
+ReactGA.initialize('G-74C02FEQVM');
 
 // Redirect unauthenticated users to /signup for protected routes
 const RequireAuth = ({ children }) => {
@@ -29,6 +33,10 @@ const AuthHandler = ({ children }) => {
       navigate("/main", { replace: true });
     }
   }, [location, navigate]);
+
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search });
+  }, [location]);
 
   return children;
 };

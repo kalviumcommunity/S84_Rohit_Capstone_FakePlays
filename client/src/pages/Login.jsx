@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ReactGA from 'react-ga4';
 import Navbar from "../components/Navbar";
 import "../styles/style.css";
 
@@ -51,6 +52,11 @@ function Login() {
       
       if (response.ok) {
         localStorage.setItem("token", data.token);
+        ReactGA.event({
+          category: 'User',
+          action: 'login',
+          label: 'Method: Email',
+        });
         setShowSuccess(true);
         setTimeout(() => navigate("/main"), 1500);
       } else {
