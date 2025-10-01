@@ -25,7 +25,7 @@ function Chat() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const initialBotSkippedRef = useRef(false);
 
-  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_APP_API_KEY}`;
   const API_BASE = (import.meta.env.VITE_API_BASE || "https://s84-rohit-capstone-fakeplays.onrender.com").replace(/\/$/, "");
   const authToken = localStorage.getItem("token");
 
